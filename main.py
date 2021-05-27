@@ -180,7 +180,7 @@ def main():
         if msg.channel.id==846713646888517652 and msg.content.lower() in ["broken bot",'bot broken','rigged','broken','sucks']:
             lx=["broken bot",'bot broken','rigged','broken','sucks']
             for i in lx:
-                if purify(msg.content.lower()).find(i):
+                if purify(msg.content.lower()).find(i) >= 0:
                     lst=['https://tenor.com/view/cry-about-it-cry-about-it-meme-gif-20184012']
                     await msg.reply(random.choice(lst))
                     break
