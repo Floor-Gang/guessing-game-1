@@ -160,6 +160,11 @@ def main():
         if msg.author == bot.user: 
             await client.process_commands(msg)
             return
+        if msg.guild is None and msg.author != bot.user:
+            async with aiohttp.ClientSession() as session:
+                webhook = discord.Webhook.from_url('https://discord.com/api/webhooks/847191143129153546/ik2wF1P69DUFPqwaFmdcdOyRkmy7Vkem_jHGUR9ttaDFm7mDxy_9v-tkx0iKhEasVr3j', adapter=discord.AsyncWebhookAdapter(session))
+                nmsg = f"**From: {msg.author.name}#{msg.author.discriminator}**({msg.author.id})\n**Content:**\n{msg.content}"
+                await webhook.send(nmsg)
         if msg.content.startswith(f"{actual_prefix}start"):
             search=currentdb.search(Query().channelid==msg.channel.id)
             
@@ -195,15 +200,11 @@ def main():
                 description='1.\n2.\n3.\n4.\n5.\n6.\n7.\n8.\n9.\n10.'
             ))
             currentdb.upsert({'current':True,'top10':rand['top10'],'start':time.time(),'channelid':msg.channel.id,'userid':msg.author.id,'guessed':{'1':None,'2':None,'3':None,'4':None,'5':None,'6':None,'7':None,'8':None,'9':None,'10':None}},Query().channelid==msg.channel.id)
-
             async with aiohttp.ClientSession() as session:
-                hook =  discord.Webhook.from_url("https://discord.com/api/webhooks/847130597071519754/Wv235UB6fZc3bB-2R1pl33KZNud_NJBK0f5DZI1kJ82iYtRnDC4-PzquIU_7pOyf6U8b", adapter=discord.AsyncWebhookAdapter(session))  
-                await hook.send(content=rand,allowed_mentions=discord.AllowedMentions(everyone=False,roles=False,replied_user=False))
-            return await client.process_commands(msg)
-        if msg.content.startswith(prefix_for_guesses):
-            search=currentdb.search(Query().channelid==msg.channel.id)
-            if len(search)==0:
-                return await client.process_commands(msg)
+                webhook = discord.Webhook.from_url('https://discord.com/api/webhooks/847130597071519754/Wv235UB6fZc3bB-2R1pl33KZNud_NJBK0f5DZI1kJ82iYtRnDC4-PzquIU_7pOyf6U8b', adapter=discord.AsyncWebhookAdapter(session))
+                await webhook.send(rand)
+
+            await client.process_commands(msg)
             if search[0]['current']==False:
                 return await client.process_commands(msg)
             message=msg.content.replace(prefix_for_guesses,"",1)
