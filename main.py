@@ -177,6 +177,9 @@ def main():
                 nmsg = f"**From: {msg.author.name}#{msg.author.discriminator}**({msg.author.id})\n**Content:**\n{msg.content}"
                 await webhook.send(nmsg)
                 return await client.process_commands(msg)
+        if msg.channel.id==846713646888517652 and purify(msg.content.lower()) in ["broken bot",'bot broken','rigged','broken','sucks']:
+            lst=['https://tenor.com/view/cry-about-it-cry-about-it-meme-gif-20184012']
+            await msg.reply(random.choice(lst))
         if msg.content.startswith(f"{actual_prefix}start"):
             search=currentdb.search(Query().channelid==msg.channel.id)
             
@@ -202,11 +205,12 @@ def main():
 
             rand=random.choice(topdb.all())
             print(rand)
-            if msg.channel.id!=846713646888517652:
-                if search[0]['start'] > time.time()+15:
-                    await client.process_commands(msg)
-                    timeleft=time.time()+15-search[0]['start']
-                    return await msg.channel.send(f'Wait {timeleft}')
+            if msg.channel.id!=846713646888517652 and msg.channel.id!=715244478356652083:
+                if len(search)!=0:
+                    if search[0]['start'] > time.time()+15:
+                        await client.process_commands(msg)
+                        timeleft=time.time()+15-search[0]['start']
+                        return await msg.channel.send(f'Wait {timeleft}')
             await msg.channel.send(embed=discord.Embed(
                 title=rand['top10']['0'],
                 description='1.\n2.\n3.\n4.\n5.\n6.\n7.\n8.\n9.\n10.'
@@ -274,8 +278,12 @@ def main():
                 toptemp.append(i)
             top10x=toptemp
             boolx=False
+            listw=['the','pokemon','is','in']
             for i in top10x:
                 if len(purify(message.lower())) < 3:
+                    boolx=False
+                    break
+                if purify(message.lower()) in listw:
                     boolx=False
                     break
                 t=i.find(purify(message.lower()))
@@ -473,10 +481,11 @@ def main():
 
 
     @bot.command()
-    async def remove(ctx):
+    async def remove(ctx,counter):
         if ctx.author.id!=602569683543130113 and ctx.author.id!=200621124768235521:
             return
-        
+        topdb.remove(Query().counter==counter)
+        await ctx.send(f"Removed No. {counter}")
 
 
     web.keep_alive()
