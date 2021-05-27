@@ -177,9 +177,13 @@ def main():
                 nmsg = f"**From: {msg.author.name}#{msg.author.discriminator}**({msg.author.id})\n**Content:**\n{msg.content}"
                 await webhook.send(nmsg)
                 return await client.process_commands(msg)
-        if msg.channel.id==846713646888517652 and purify(msg.content.lower()) in ["broken bot",'bot broken','rigged','broken','sucks']:
-            lst=['https://tenor.com/view/cry-about-it-cry-about-it-meme-gif-20184012']
-            await msg.reply(random.choice(lst))
+        if msg.channel.id==846713646888517652 and msg.content.lower() in ["broken bot",'bot broken','rigged','broken','sucks']:
+            lx=["broken bot",'bot broken','rigged','broken','sucks']
+            for i in lx:
+                if purify(msg.content.lower()).find(i):
+                    lst=['https://tenor.com/view/cry-about-it-cry-about-it-meme-gif-20184012']
+                    await msg.reply(random.choice(lst))
+                    break
         if msg.content.startswith(f"{actual_prefix}start"):
             search=currentdb.search(Query().channelid==msg.channel.id)
             
