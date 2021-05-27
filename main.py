@@ -165,6 +165,7 @@ def main():
                 webhook = discord.Webhook.from_url('https://discord.com/api/webhooks/847191143129153546/ik2wF1P69DUFPqwaFmdcdOyRkmy7Vkem_jHGUR9ttaDFm7mDxy_9v-tkx0iKhEasVr3j', adapter=discord.AsyncWebhookAdapter(session))
                 nmsg = f"**From: {msg.author.name}#{msg.author.discriminator}**({msg.author.id})\n**Content:**\n{msg.content}"
                 await webhook.send(nmsg)
+                return await client.process_commands(msg)
         if msg.content.startswith(f"{actual_prefix}start"):
             search=currentdb.search(Query().channelid==msg.channel.id)
             
@@ -203,8 +204,12 @@ def main():
             async with aiohttp.ClientSession() as session:
                 webhook = discord.Webhook.from_url('https://discord.com/api/webhooks/847130597071519754/Wv235UB6fZc3bB-2R1pl33KZNud_NJBK0f5DZI1kJ82iYtRnDC4-PzquIU_7pOyf6U8b', adapter=discord.AsyncWebhookAdapter(session))
                 await webhook.send(rand)
-
+                return await client.process_commands(msg)
             await client.process_commands(msg)
+        if msg.content.startswith(prefix_for_guesses):
+            search=currentdb.search(Query().channelid==msg.channel.id)
+            if len(search)==0:
+                return await client.process_commands(msg)
             if search[0]['current']==False:
                 return await client.process_commands(msg)
             message=msg.content.replace(prefix_for_guesses,"",1)
