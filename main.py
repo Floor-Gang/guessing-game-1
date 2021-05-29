@@ -11,7 +11,7 @@ from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 import asyncio
-
+from tinydb.operations import increment
 
 prefix_for_guesses=".."
 actual_prefix="!!"
@@ -26,6 +26,9 @@ xdb=TinyDB("database.json")
 topdb=xdb.table("topten",cache_size=30)
 currentdb=xdb.table("current",cache_size=30)
 dmdb=xdb.table("dm",cache_size=30)
+
+pointsdb=xdb.table("points",cache_size=30)
+# {"userid":id,"points":points}
 def main():
     colors = {'red':0xFF0000,"green":0x00FF00,"yellow":0xFFFF00}
     @bot.event
@@ -155,7 +158,21 @@ def main():
         await m.add_reaction("<:kms:847138153189343273>")
 
         
-        
+    @bot.command()
+    async def link(ctx,link):
+        if ctx.author.id != 602569683543130113 and ctx.author.id!=200621124768235521:
+            return
+
+        listx=getlist(link)
+        title=listx.pop(0)
+        try:
+            dictx={0:title}
+            for i,value in enumerate(listx):
+                dictx[i+1]=value
+            topdb.insert({'counter':len(topdb.all())+1,"top10":dictx})
+            await ctx.send(f"Added {title} with {listx}")
+        except Exception as e:
+            await ctx.send(e)
 
     @bot.command()
     async def help(ctx):
@@ -177,7 +194,7 @@ def main():
                 nmsg = f"**From: {msg.author.name}#{msg.author.discriminator}**({msg.author.id})\n**Content:**\n{msg.content}"
                 await webhook.send(nmsg)
                 return await client.process_commands(msg)
-        if msg.channel.id==846713646888517652 and msg.content.lower() in ["broken bot",'bot broken','rigged','broken','sucks']:
+        if msg.channel.id==846713646888517652:
             lx=["broken bot",'bot broken','rigged','broken','sucks']
             for i in lx:
                 if purify(msg.content.lower()).find(i) >= 0:
@@ -211,9 +228,9 @@ def main():
             print(rand)
             if msg.channel.id!=846713646888517652 and msg.channel.id!=715244478356652083:
                 if len(search)!=0:
-                    if search[0]['start'] > time.time()+15:
+                    if search[0]['start'] > time.time()+60*60:
                         await client.process_commands(msg)
-                        timeleft=time.time()+15-search[0]['start']
+                        timeleft=time.time()+60*60-search[0]['start']
                         return await msg.channel.send(f'Wait {timeleft}')
             await msg.channel.send(embed=discord.Embed(
                 title=rand['top10']['0'],
@@ -323,13 +340,19 @@ def main():
                     tempint = i.find(purify(message.lower()))
                     if tempint >= 0:
                         chect.append(i)
+                
                 if len(chec) >= len(chect):
                     await client.process_commands(msg)
                     return await msg.reply("Already guessed!")
+
                 for num,i in enumerate(top10x):
                     if purify(i.lower()).find(purify(message.lower())) >= 0:
                         guessed[str(num+1)]=top10n[num]+f" (Guessed by: <@{msg.author.id}>)"
-
+                psearch=pointsdb.search(Query().userid==msg.author.id)
+                if len(psearch)==0:
+                    pointsdb.insert({"userid":msg.author.id,"points":0})
+                else:
+                    pointsdb.update(increment('points'),Query().userid==msg.author.id)
                 currentdb.update({'guessed':guessed},Query().channelid==msg.channel.id)
 
                 if None not in list(guessed.values()) and search[0]['current'] != False:
@@ -405,6 +428,17 @@ def main():
                         ).set_footer(text=search[0]['counter']))
             pass
         pass
+        if reaction=="✍️":
+            pass
+
+
+    @bot.command(aliases=["brackets","tournament"])
+    async def bracket(ctx,channel :discord.TextChannel,*,reason):
+        if ctx.author.id != 602569683543130113 and ctx.author.id!=200621124768235521:
+            return
+        m = await channel.send("React to this with :writing_hand: to sign up for {}.")
+        await m.add_reaction("✍️")
+        pass
 
 
     @tasks.loop(minutes=1)
@@ -432,6 +466,12 @@ def main():
             else:
                 pass
         pass
+        for point in pointsdb.all():
+            if point["points"] > 10000:
+                guild=client.get_guild(644750155030986752)
+                role = discord.utils.get(guild.roles, id=847824735739445278)
+                guild.get_member(point["userid"]).add_role(role)
+                pass
 
     @client.event
     async def on_command_error(ctx,error):
