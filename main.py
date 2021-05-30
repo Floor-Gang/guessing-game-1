@@ -28,14 +28,15 @@ currentdb=xdb.table("current",cache_size=30)
 dmdb=xdb.table("dm",cache_size=30)
 
 pointsdb=xdb.table("points",cache_size=30)
-# {"userid":id,"points":points}
+tournamentdb=xdb.table("tournament",cache_size=30)
+# {"number":0,"people":[]}
 def main():
     colors = {'red':0xFF0000,"green":0x00FF00,"yellow":0xFFFF00}
     @bot.event
     async def on_ready():
         check.start()
         print("started")
-
+    
     @bot.command(aliases=['show','hint'])
     @commands.cooldown(1, 60*2.5, commands.BucketType.channel)
     async def reveal(ctx):
@@ -140,7 +141,7 @@ def main():
             i=i.strip(f"{num+1}. ")
             dictx[str(num+1)]=i
         print(dictx)
-        topdb.upsert({'count':len(topdb.all())+1,"top10":dictx},Query().top10==dictx)
+        topdb.upsert({'counter':len(topdb.all())+1,"top10":dictx},Query().top10==dictx)
         await ctx.send("Added")
 
     @bot.command(aliases=['forcestart','new'])
@@ -398,11 +399,7 @@ def main():
     async def on_reaction_add(reaction,user):
         if user==bot.user:
             return
-        try:
-            r=reaction.emoji.id
-        except:
-            return
-        if r==847138153189343273:
+        if reaction=="<:kms:847138153189343273>":
             if reaction.message.author.id==846586533439995914:
                 search=currentdb.search(Query().channelid==reaction.message.channel.id)
                 if search[0]['current']!=False:
@@ -428,17 +425,120 @@ def main():
                         ).set_footer(text=search[0]['counter']))
             pass
         pass
-        if reaction=="✍️":
+
+
+    @bot.event
+    async def on_raw_reaction_add(payload):
+        reaction=payload.emoji
+        user=payload.member
+        if user==bot.user:
+            return
+        if str(reaction)=="✍️":
+            msgid=payload.message_id
+            searchd=tournamentdb.search(Query().msgid==msgid)
+            if len(searchd)!=0:
+                if searchd[0]["closed"]==False:
+                    listx=searchd[0]["people"]
+                    if user.id not in listx:
+                        listx.append(user.id)
+                        await user.send("You have signed up!")
+                    else:
+                        await user.send("You have already signed up!")
+                    tournamentdb.update({"people":listx})
+                    
+                else:
+                    try:
+                        if user.bot==False:
+                            await user.send("Signups have been closed for this!")
+                    except:
+                        pass
             pass
+        
 
 
-    @bot.command(aliases=["brackets","tournament"])
+
+    @bot.event
+    async def on_raw_reaction_remove(payload):
+        reaction=payload.emoji
+        user=bot.get_user(payload.user_id)
+        if user==bot.user:
+            return
+        if str(reaction)=="✍️":
+            msgid=payload.message_id
+            searchd=tournamentdb.search(Query().msgid==msgid)
+            if len(searchd)!=0:
+                if searchd[0]["closed"]==False:
+                    listx=searchd[0]["people"]
+                    if user.id in listx:
+                        listx.remove(user.id)
+                        await user.send("You have removed your entry!")
+                    else:
+                        await user.send("You haven't signed up!")
+                    tournamentdb.update({"people":listx},Query().msgid==msgid)
+                    
+                else:
+                    try:
+                        if user.bot==False:
+                            await user.send("Signups have been closed for this!")
+                    except:
+                        pass
+            pass
+        
+
+
+    @bot.command(aliases=["brackets","tournament",'signups','signup'])
     async def bracket(ctx,channel :discord.TextChannel,*,reason):
         if ctx.author.id != 602569683543130113 and ctx.author.id!=200621124768235521:
             return
-        m = await channel.send("React to this with :writing_hand: to sign up for {}.")
+        count=len(tournamentdb.all())+1
+        
+        m = await channel.send(embed=discord.Embed(
+            description=f"React to this with :writing_hand: to sign up for {reason}."
+            ).set_footer(text=count))
+        tournamentdb.insert({"number":len(tournamentdb.all())+1,"people":[],"msgid":m.id,"closed":False})
         await m.add_reaction("✍️")
+        await ctx.send(f"Added reaction-bracket for {reason} in #{channel.name} with id {count}")
         pass
+
+    @bot.command(aliases=["open",'toggle'])
+    async def close(ctx,id):
+        pass
+        if ctx.author.id != 602569683543130113 and ctx.author.id!=200621124768235521:
+            return
+        search=tournamentdb.search(Query().number==id)
+        if len(search)!=0:
+            state="Closed"
+            if search[0]['current']==False:
+                boolx=True
+                state="Open"
+            else:
+                boolx=False
+            tournamentdb.update({"current":boolx},Query().number==id)
+            
+            await ctx.send(f"The signup is {state}")
+        else:
+            await ctx.send("Invalid id")
+
+    @bot.command()
+    async def create(ctx,number:int):
+        list1,list2=[],[]
+        search=tournamentdb.search(Query().number==number)
+        if len(search)==0:
+            return await ctx.send("No signups with that id")
+        for i in list(search[0]['people']):
+            list2.append(i)
+            if len(list2)==2:
+                list1.append(list2)
+                list2=[]
+        if len(list(search[0]["people"]))%2!=0:
+            list1.append(list2)
+        desc=""
+        for num,i in enumerate(list1):
+            if len(i)==1:
+                desc=desc+str(num+1)+". <@"+str(i[0])+"> passes on due to odd no. of people.""\n"
+            else:
+                desc=desc+str(num+1)+". <@"+str(i[0])+"> x <@"+str(i[1])+">\n"
+        await ctx.send(embed=discord.Embed(title=f"Signups for {number}",description=desc))
 
 
     @tasks.loop(minutes=1)
@@ -496,10 +596,10 @@ def main():
         if ctx.author.id!=602569683543130113 and ctx.author.id!=200621124768235521:
             return
         search=dmdb.search(Query().userid==int(id))
-        if len(search)==0:
-            return await ctx.reply(f"This user is blocked for {search[0]['reason']} by <@{search[0]['blockedby']}>",allowed_mentions=None)
-        if search[0]['current'] == True:
-            return await ctx.reply(f"This user is blocked for {search[0]['reason']} by <@{search[0]['blockedby']}>",allowed_mentions=None)
+
+        if len(search)!=0:
+            if search[0]['current'] == True:
+                return await ctx.reply(f"This user is blocked for {search[0]['reason']} by <@{search[0]['blockedby']}>",allowed_mentions=None)
         try:
             user=bot.get_user(int(id))
         except:
