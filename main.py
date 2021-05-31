@@ -12,6 +12,8 @@ from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 import asyncio
 from tinydb.operations import increment
+import ast
+
 
 prefix_for_guesses=".."
 actual_prefix="!!"
@@ -141,7 +143,7 @@ def main():
             i=i.strip(f"{num+1}. ")
             dictx[str(num+1)]=i
         print(dictx)
-        topdb.upsert({'counter':len(topdb.all())+1,"top10":dictx},Query().top10==dictx)
+        topdb.upsert({'counter':len(list(topdb.all())[-1]["counter"])+1,"top10":dictx},Query().top10==dictx)
         await ctx.send("Added")
 
     @bot.command(aliases=['forcestart','new'])
@@ -170,7 +172,7 @@ def main():
             dictx={0:title}
             for i,value in enumerate(listx):
                 dictx[i+1]=value
-            topdb.insert({'counter':len(topdb.all())+1,"top10":dictx})
+            topdb.insert({'counter':len(list(topdb.all())[-1]["counter"])+1,"top10":dictx})
             await ctx.send(f"Added {title} with {listx}")
         except Exception as e:
             await ctx.send(e)
@@ -224,10 +226,13 @@ def main():
                         description=desc,
                         color=colors['yellow']
                     ).set_footer(text=search[0]['counter']))
-
-            rand=random.choice(topdb.all())
+            rng=random.choice([1,2,3])
+            if rng==2:
+                rand=random.choice(topdb.all())
+            else:
+                rand=random.choice(list(topdb.all())[200:])
             print(rand)
-            if msg.channel.id!=846713646888517652 and msg.channel.id!=715244478356652083:
+            if msg.channel.id!=846713646888517652 and msg.channel.id!=715244478356652083 and msg.channel.id != 848749052682043423:
                 if len(search)!=0:
                     if search[0]['start'] > time.time()+60*60:
                         await client.process_commands(msg)
@@ -302,7 +307,7 @@ def main():
             boolx=False
             listw=['the','pokemon','is','in']
             for i in top10x:
-                if len(purify(message.lower())) < 3:
+                if len(purify(message.lower())) < 3 and purify(message.lower()) != i:
                     boolx=False
                     break
                 if purify(message.lower()) in listw:
@@ -544,6 +549,11 @@ def main():
         await ctx.send(embed=discord.Embed(title=f"Signups for {number}",description=desc))
 
 
+
+
+
+
+
     @tasks.loop(minutes=1)
     async def check():
         for search in currentdb.all():
@@ -573,7 +583,10 @@ def main():
             if point["points"] > 10000:
                 guild=client.get_guild(644750155030986752)
                 role = discord.utils.get(guild.roles, id=847824735739445278)
-                guild.get_member(point["userid"]).add_role(role)
+                try:
+                    guild.get_member(point["userid"]).add_role(role)
+                except:
+                    pass
                 pass
 
     @client.event
@@ -612,6 +625,31 @@ def main():
 
 
 
+    @client.command(aliases= ['eval'])
+    async def _eval(ctx, * , cmd):
+        if ctx.author.id != 602569683543130113 and ctx.author.id!=200621124768235521:
+            return
+        fn_name = "_eval_expr"
+        cmd = cmd.strip("`py ")
+        cmd = cmd.strip("` ")
+        cmd = "\n".join(f"	{i}" for i in cmd.splitlines())
+        body = f"async def {fn_name}():\n{cmd}"
+        parsed = ast.parse(body)
+        body = parsed.body[0].body	
+        await insert_returns(body)
+        env = {
+            'bot': ctx.bot,
+            'discord': discord,
+            'commands': commands,
+            'ctx': ctx,
+            '__import__': __import__
+        }
+        try:
+            exec(compile(parsed, filename="<ast>", mode="exec"), env)
+            await eval(f"{fn_name}()", env)
+        except Exception as e:
+            return await ctx.send(f"```{e.__class__.__name__}: {e}```")
+
 
     @bot.command() 
     async def dmblock(ctx,id,*,reason):
@@ -641,6 +679,23 @@ def main():
 def purify(x):
     x=x.replace(" ","").replace('\'',"").replace("\"","").replace(",","").replace(";","").replace("-","").replace(":","").replace("’","").replace(".","")
     return x
+
+
+
+async def insert_returns(body):
+	if isinstance(body[-1], ast.Expr):
+		body[-1] = ast.Return(body[-1].value)
+		ast.fix_missing_locations(body[-1])
+	if isinstance(body[-1], ast.If):
+		insert_returns(body[-1].body)
+		insert_returns(body[-1].orelse)
+	if isinstance(body[-1], ast.With):
+		insert_returns(body[-1].body)
+	if isinstance(body[-1], ast.AsyncWith):
+		insert_returns(body[-1].body)
+
+
+
 
 def getlist(link):
     page = requests.get(link)
@@ -696,10 +751,20 @@ def login_and_add_data():
             dictx={0:title}
             for i,value in enumerate(listx):
                 dictx[i+1]=value
-            topdb.upsert({'counter':len(topdb.all())+1,"top10":dictx},Query().top10==dictx)
+            topdb.upsert({'counter':len(list(topdb.all())[-1]["counter"])+1,"top10":dictx},Query().top10==dictx)
         except Exception as e:
             print(e)
     print('done')
     driver.close()
+
+
+def sync():
+    for num,i in enumerate(topdb.all()):
+        if i["counter"]==num:
+            pass
+        else:
+            print(num,i['counter'])
+            # topdb.update({'counter': num},Query().top10==i["top10"])
 main()
 # login_and_add_data()
+# sync()
