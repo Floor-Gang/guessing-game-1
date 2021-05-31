@@ -394,17 +394,20 @@ def main():
                 await client.process_commands(msg)
         await client.process_commands(msg)
 
-
     @bot.event
     async def on_reaction_add(reaction,user):
         if user==bot.user:
             return
-        if reaction=="<:kms:847138153189343273>":
+        try:
+            r=reaction.emoji.id
+        except:
+            return
+        if r==847138153189343273:
             if reaction.message.author.id==846586533439995914:
                 search=currentdb.search(Query().channelid==reaction.message.channel.id)
                 if search[0]['current']!=False:
                     currentdb.update({'endcount':search[0]['endcount']+1},Query().channelid==search[0]['channelid'])
-                    if search[0]['endcount'] >= 3:
+                    if search[0]['endcount']+1 >= 3:
                         currentdb.update({"current":False},Query().channelid==search[0]['channelid'])
                         gval=list(search[0]['guessed'].values())
                         desc=''
