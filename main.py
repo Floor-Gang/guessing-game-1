@@ -15,6 +15,8 @@ from tinydb.operations import increment
 import ast
 
 
+
+
 prefix_for_guesses=".."
 actual_prefix="!!"
 bot = commands.Bot(command_prefix=actual_prefix,
@@ -32,13 +34,36 @@ dmdb=xdb.table("dm",cache_size=30)
 pointsdb=xdb.table("points",cache_size=30)
 tournamentdb=xdb.table("tournament",cache_size=30)
 # {"number":0,"people":[]}
+
+
+
+
+questions = [
+    ""
+]
+
+
+
 def main():
     colors = {'red':0xFF0000,"green":0x00FF00,"yellow":0xFFFF00}
     @bot.event
     async def on_ready():
         check.start()
         print("started")
-    
+        print(len(topdb))
+
+
+
+    message_cooldown1 = commands.CooldownMapping.from_cooldown(15.0, 30.0, commands.BucketType.channel)
+    message_cooldown2 = commands.CooldownMapping.from_cooldown(0.0, 10.0, commands.BucketType.channel)
+
+
+
+
+
+
+
+
     @bot.command(aliases=['show','hint'])
     @commands.cooldown(1, 60*2.5, commands.BucketType.channel)
     async def reveal(ctx):
@@ -143,7 +168,8 @@ def main():
             i=i.strip(f"{num+1}. ")
             dictx[str(num+1)]=i
         print(dictx)
-        topdb.upsert({'counter':len(list(topdb.all())[-1]["counter"])+1,"top10":dictx},Query().top10==dictx)
+        print(list(topdb.all())[-1]["counter"]+1)
+        topdb.upsert({'counter':list(topdb.all())[-1]["counter"]+1,"top10":dictx},Query().top10==dictx)
         await ctx.send("Added")
 
     @bot.command(aliases=['forcestart','new'])
@@ -172,7 +198,7 @@ def main():
             dictx={0:title}
             for i,value in enumerate(listx):
                 dictx[i+1]=value
-            topdb.insert({'counter':len(list(topdb.all())[-1]["counter"])+1,"top10":dictx})
+            topdb.insert({'counter':list(topdb.all())[-1]["counter"]+1,"top10":dictx})
             await ctx.send(f"Added {title} with {listx}")
         except Exception as e:
             await ctx.send(e)
@@ -181,7 +207,7 @@ def main():
     async def help(ctx):
         await ctx.send(embed=discord.Embed(
             title="get help",
-            description=f"Use `{actual_prefix}start` to start a game in any channel.\nUse `{prefix_for_guesses}guess` to guess during a game.\nUse {actual_prefix}new to Vote to start a new game.\nUse {actual_prefix}hint for one answer, can be used once per game."
+            description=f"Use `{actual_prefix}start` to start a game in any channel.\nUse `{prefix_for_guesses}guess` to guess during a game.\nUse `{actual_prefix}new` to Vote to start a new game.\nUse `{actual_prefix}hint` for one answer, can be used once per game.\nGuess the top 10 things about the topic, using {prefix_for_guesses}guess to guess"
         ))
         pass
 
@@ -191,13 +217,28 @@ def main():
         if msg.author == bot.user: 
             await client.process_commands(msg)
             return
+        bucket1 = message_cooldown1.get_bucket(msg)
+        retry_after = bucket1.update_rate_limit()
+        if retry_after:
+            try:
+                await msg.channel.edit(slowmode_delay=5)
+            except:
+                pass
+        bucket2 = message_cooldown2.get_bucket(msg)
+        retry_after = bucket2.update_rate_limit()
+        if retry_after:
+            try:
+                await msg.channel.edit(slowmode_delay=0)
+            except:
+                pass
+            await client.process_commands(msg)
         if msg.guild is None and msg.author != bot.user:
             async with aiohttp.ClientSession() as session:
                 webhook = discord.Webhook.from_url('https://discord.com/api/webhooks/847191143129153546/ik2wF1P69DUFPqwaFmdcdOyRkmy7Vkem_jHGUR9ttaDFm7mDxy_9v-tkx0iKhEasVr3j', adapter=discord.AsyncWebhookAdapter(session))
                 nmsg = f"**From: {msg.author.name}#{msg.author.discriminator}**({msg.author.id})\n**Content:**\n{msg.content}"
                 await webhook.send(nmsg)
                 return await client.process_commands(msg)
-        if msg.channel.id==846713646888517652:
+        if msg.channel.id==846713646888517652 or msg.channel.id==848749052682043423:
             lx=["broken bot",'bot broken','rigged','broken','sucks']
             for i in lx:
                 if purify(msg.content.lower()).find(i) >= 0:
@@ -226,11 +267,12 @@ def main():
                         description=desc,
                         color=colors['yellow']
                     ).set_footer(text=search[0]['counter']))
-            rng=random.choice([1,2,3])
+            '''rng=random.choice([1,2,3])
             if rng==2:
                 rand=random.choice(topdb.all())
             else:
-                rand=random.choice(list(topdb.all())[200:])
+                rand=random.choice(list(topdb.all())[200:])'''
+            rand=random.choice(list(topdb.all()))
             print(rand)
             if msg.channel.id!=846713646888517652 and msg.channel.id!=715244478356652083 and msg.channel.id != 848749052682043423:
                 if len(search)!=0:
@@ -305,7 +347,7 @@ def main():
                 toptemp.append(i)
             top10x=toptemp
             boolx=False
-            listw=['the','pokemon','is','in']
+            listw=['the','pokemon','is','in','dank','meme']
             for i in top10x:
                 if len(purify(message.lower())) < 3 and purify(message.lower()) != i:
                     boolx=False
@@ -354,11 +396,12 @@ def main():
                 for num,i in enumerate(top10x):
                     if purify(i.lower()).find(purify(message.lower())) >= 0:
                         guessed[str(num+1)]=top10n[num]+f" (Guessed by: <@{msg.author.id}>)"
-                psearch=pointsdb.search(Query().userid==msg.author.id)
+                psearch=pointsdb.search(Query().id==(msg.author.id,msg.guild.id))
                 if len(psearch)==0:
-                    pointsdb.insert({"userid":msg.author.id,"points":0})
+                    pointsdb.insert({"id":(msg.author.id,msg.guild.id),"points":0})
                 else:
-                    pointsdb.update(increment('points'),Query().userid==msg.author.id)
+                    pointsdb.update(increment('points'),Query().id==(msg.author.id,msg.guild.id))
+                
                 currentdb.update({'guessed':guessed},Query().channelid==msg.channel.id)
 
                 if None not in list(guessed.values()) and search[0]['current'] != False:
@@ -434,34 +477,6 @@ def main():
             pass
         pass
 
-
-    @bot.event
-    async def on_raw_reaction_add(payload):
-        reaction=payload.emoji
-        user=payload.member
-        if user==bot.user:
-            return
-        if str(reaction)=="✍️":
-            msgid=payload.message_id
-            searchd=tournamentdb.search(Query().msgid==msgid)
-            if len(searchd)!=0:
-                if searchd[0]["closed"]==False:
-                    listx=searchd[0]["people"]
-                    if user.id not in listx:
-                        listx.append(user.id)
-                        await user.send("You have signed up!")
-                    else:
-                        await user.send("You have already signed up!")
-                    tournamentdb.update({"people":listx})
-                    
-                else:
-                    try:
-                        if user.bot==False:
-                            await user.send("Signups have been closed for this!")
-                    except:
-                        pass
-            pass
-        
 
 
 
@@ -581,13 +596,14 @@ def main():
         pass
         for point in pointsdb.all():
             if point["points"] > 10000:
-                guild=client.get_guild(644750155030986752)
-                role = discord.utils.get(guild.roles, id=847824735739445278)
-                try:
-                    guild.get_member(point["userid"]).add_role(role)
-                except:
+                if point['id'][1]==644750155030986752:
+                    guild=client.get_guild(644750155030986752)
+                    role = discord.utils.get(guild.roles, id=847824735739445278)
+                    try:
+                        guild.get_member(point["userid"]).add_role(role)
+                    except:
+                        pass
                     pass
-                pass
 
     @client.event
     async def on_command_error(ctx,error):
@@ -605,7 +621,30 @@ def main():
             channel = client.get_channel(716538413397835799)
             await channel.send(f"----------\nholup-guessing: \n`{error}`\n\n`{ctx.guild.id}` <@602569683543130113>")
 
-
+    @bot.command(aliases=['forceend','kill','killswitch','end'])
+    @commands.has_permissions(manage_messages=True)
+    async def forcenew(ctx):
+        search=currentdb.search(Query().channelid==ctx.channel.id)
+        if search[0]['current']!=False:
+            currentdb.update({"current":False},Query().channelid==search[0]['channelid'])
+            gval=list(search[0]['guessed'].values())
+            desc=''
+            c=1
+            for i in gval:
+                if i == None:
+                    try:
+                        i=f"||{search[0]['top10'][str(c)]}||"
+                    except:
+                        i=f"nothing here because no one added a {c} place"
+                desc=desc + '\n' + str(c) + '. ' + i
+                c+=1
+            channel=client.get_channel(search[0]['channelid'])
+            await channel.send("You ended this game! This is the final list, with the ones not guessed in spoilers.",embed=discord.Embed(
+                title=search[0]['top10']['0'],
+                description=desc,
+                color=colors['red'],
+            ).set_footer(text=search[0]['counter']))
+        pass
 
     @bot.command()
     async def dm(ctx,id,*,message):
@@ -623,7 +662,10 @@ def main():
         await user.send(message)
         await ctx.send(f"Messaged {user.name}#{user.discriminator} {message}")
 
-
+    @bot.command(aliases=["lb",'leaderboard','points'])
+    async def rank(ctx):
+        
+        pass
 
     @client.command(aliases= ['eval'])
     async def _eval(ctx, * , cmd):
@@ -751,7 +793,7 @@ def login_and_add_data():
             dictx={0:title}
             for i,value in enumerate(listx):
                 dictx[i+1]=value
-            topdb.upsert({'counter':len(list(topdb.all())[-1]["counter"])+1,"top10":dictx},Query().top10==dictx)
+            topdb.upsert({'counter':list(topdb.all())[-1]["counter"]+1,"top10":dictx},Query().top10==dictx)
         except Exception as e:
             print(e)
     print('done')
