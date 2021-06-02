@@ -13,6 +13,8 @@ flask = "^2.0.1"
 pandas = "^1.2.4"
 bs4 = "^0.0.1"
 selenium = "^3.141.0"
+google-api-python-client = "^2.7.0"
+google-auth-oauthlib = "^0.4.4"
 
 [tool.poetry.dev-dependencies]
 
