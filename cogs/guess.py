@@ -25,8 +25,28 @@ class Guess(commands.Cog):
     @commands.command()
     async def start(self,ctx,pack=None):
         search=currentdb.search(Query().channelid==ctx.channel.id)
-        
         if len(search)!=0:
+            if search[0]['start']+60*5 <= time.time() and search[0]['current'] != False:
+                currentdb.update({"current":False},Query().channelid==search[0]['channelid'])
+                gval=list(search[0]['guessed'].values())
+                desc=''
+                c=1
+                for i in gval:
+                    if i == None:
+                        try:
+                            i=f"||{search[0]['top10'][str(c)]}||"
+                        except:
+                            i=f"nothing here because no one added a {c} place"
+                    desc=desc + '\n' + str(c) + '. ' + i
+                    c+=1
+                channel=self.bot.get_channel(search[0]['channelid'])
+                await channel.send("You have run out of time! This is the final list, with the ones not guessed in spoilers.",embed=discord.Embed(
+                    title=search[0]['top10']['0'],
+                    description=desc,
+                    color=colors['red']
+                ).set_footer(text=search[0]['counter']))
+            else:
+                pass
             if search[0]['current']==True:
                 gval=list(search[0]['guessed'].values())
                 desc=''
@@ -51,10 +71,10 @@ class Guess(commands.Cog):
             rand=random.choice(list(topdb.all())[200:])'''
         rand=random.choice(list(topdb.all()))
         print(rand)
-        if ctx.channel.id!=846713646888517652 and ctx.channel.id!=715244478356652083 and ctx.channel.id != 848749052682043423:
+        if ctx.channel.id not in [850399405101154324 , 846713646888517652 , 715244478356652083 , 848749052682043423]:
             if len(search)!=0:
-                if search[0]['start'] > time.time()+60*60:
-                    timeleft=time.time()+60*60-search[0]['start']
+                if search[0]['start'] > time.time()+15*60:
+                    timeleft=time.time()+15*60-search[0]['start']
                     return await ctx.send(f'Wait {timeleft}')
         await ctx.send(embed=discord.Embed(
             title=rand['top10']['0'],
@@ -203,11 +223,11 @@ class Guess(commands.Cog):
                 for num,i in enumerate(top10x):
                     if purify(i.lower()).find(purify(message.lower())) >= 0:
                         guessed[str(num+1)]=top10n[num]+f" (Guessed by: <@{msg.author.id}>)"
-                psearch=pointsdb.search(Query().userid==msg.author.id)
+                psearch=pointsdb.search(Query().id==(msg.author.id,msg.guild.id))
                 if len(psearch)==0:
-                    pointsdb.insert({"userid":msg.author.id,"points":0})
+                    pointsdb.insert({"id":(msg.author.id,msg.guild.id),"points":0})
                 else:
-                    pointsdb.update(increment('points'),Query().userid==msg.author.id)
+                    pointsdb.update(increment('points'),Query().id==(msg.author.id,msg.guild.id))
                 
                 currentdb.update({'guessed':guessed},Query().channelid==msg.channel.id)
 

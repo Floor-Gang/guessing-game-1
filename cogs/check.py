@@ -9,7 +9,7 @@ currentdb=xdb.table("current",cache_size=30)
 pointsdb=xdb.table("points",cache_size=30)
 colors = {'red':0xFF0000,"green":0x00FF00,"yellow":0xFFFF00}
 
-class Points(commands.Cog):
+class Check(commands.Cog):
     def __init__(self, bot):
         self.bot = bot 
         self.check.start()
@@ -40,7 +40,7 @@ class Points(commands.Cog):
                 pass
         pass
         for point in pointsdb.all():
-            if point["points"] > 10000:
+            if point["points"] > 10000 and point['id'][1]==644750155030986752:
                 guild=self.bot.get_guild(644750155030986752)
                 role = discord.utils.get(guild.roles, id=847824735739445278)
                 try:
@@ -50,5 +50,7 @@ class Points(commands.Cog):
                 pass
 
 
+
+
 def setup(bot):
-    bot.add_cog(Points(bot))
+    bot.add_cog(Check(bot))

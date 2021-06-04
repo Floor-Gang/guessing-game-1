@@ -16,7 +16,9 @@ cogs.dm => checks dms to send it to #stream
 cogs.guess => start command, checks guesses 
 cogs.helpers => helper functions, no commands 
 cogs.manipulate => eval, add , remove and anything to do with manipulating the db directly
-cogs.points => checks
+cogs.check => checks
+
+cogs.textcreate => [ in progress ] create text effects
 '''
 
 bot = commands.Bot(command_prefix=actual_prefix,
@@ -30,7 +32,7 @@ cog_imports = [
     "cogs.dm",
     "cogs.guess",
     "cogs.manipulate",
-    "cogs.points",
+    "cogs.check",
     "cogs.show",
     "cogs.vote"
 ]

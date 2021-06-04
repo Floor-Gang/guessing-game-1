@@ -15,16 +15,17 @@ class Manipulate(commands.Cog):
 
 
     @commands.command()
-    async def add(self,ctx,*,message):
+    async def add(self,ctx,*,message:str):
         if ctx.author.id != 602569683543130113 and ctx.author.id!=200621124768235521:
             return
-        message=message.split('\n')
+        message=str(message).split('\n')
         title=message.pop(0)
         dictx={"0":title}
         if len(message) != 10:
             return await ctx.send("List doesnt have 10 values exactly")
         for num,i in enumerate(message):
             i=i.strip(f"{num+1}. ")
+            print(i)
             dictx[str(num+1)]=i
         print(dictx)
         print(list(topdb.all())[-1]["counter"]+1)
@@ -78,7 +79,7 @@ class Manipulate(commands.Cog):
         except Exception as e:
             return await ctx.send(f"```{e.__class__.__name__}: {e}```")
 
-
+    
 
     @commands.command()
     async def remove(self,ctx,counter):
