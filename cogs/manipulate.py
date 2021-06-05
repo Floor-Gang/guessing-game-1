@@ -1,7 +1,7 @@
 # [ main cog for eval,add,link,remove ]
 from discord.ext import commands
 from tinydb import TinyDB,Query
-from cogs.helpers import getlist,insert_returns
+from cogs.helpers import getlist,insert_returns , sheet_up
 import ast
 import discord
 
@@ -25,11 +25,12 @@ class Manipulate(commands.Cog):
             return await ctx.send("List doesnt have 10 values exactly")
         for num,i in enumerate(message):
             i=i.strip(f"{num+1}. ")
-            print(i)
             dictx[str(num+1)]=i
         print(dictx)
         print(list(topdb.all())[-1]["counter"]+1)
         topdb.upsert({'counter':list(topdb.all())[-1]["counter"]+1,"top10":dictx},Query().top10==dictx)
+        topdb.clear_cache()
+        sheet_up()
         await ctx.send("Added")
 
 
@@ -47,6 +48,8 @@ class Manipulate(commands.Cog):
             for i,value in enumerate(listx):
                 dictx[i+1]=value
             topdb.insert({'counter':list(topdb.all())[-1]["counter"]+1,"top10":dictx})
+            topdb.clear_cache()
+            sheet_up()
             await ctx.send(f"Added {title} with {listx}")
         except Exception as e:
             await ctx.send(e)
@@ -86,6 +89,8 @@ class Manipulate(commands.Cog):
         if ctx.author.id!=602569683543130113 and ctx.author.id!=200621124768235521:
             return
         topdb.remove(Query().counter==counter)
+        topdb.clear_cache()
+        sheet_up()
         await ctx.send(f"Removed No. {counter}")
 
 

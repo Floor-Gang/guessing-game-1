@@ -1,16 +1,36 @@
 import web
 import discord
-from discord.ext import commands
+from discord.ext import commands , tasks
 import os
 # from bs4 import BeautifulSoup
 # from selenium import webdriver
 # from selenium.webdriver.chrome.options import Options
 from cogs.helpers import actual_prefix,prefix_for_guesses
+from google.oauth2 import service_account
+from googleapiclient.discovery import build
+from tinydb import TinyDB,Query
+
+
+xdb=TinyDB("database.json")
+topdb=xdb.table("topten",cache_size=30)
+
 
 actual_prefix=actual_prefix()
 prefix_for_guesses=prefix_for_guesses()
 
+
+SAMPLE_SPREADSHEET_ID = '181E99091FvrIaQDtJJWOTV3VmqPVr5sCGfXGExb6mx0'
+SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
+SERVICE_ACCOUNT_FILE = 'guess10keys.json'
+
+credentials = None
+credentials = service_account.Credentials.from_service_account_file(
+        SERVICE_ACCOUNT_FILE, scopes=SCOPES)
+
+
 '''
+main => gsheets, errors, help , startup&cog imports, webserver imports
+
 cogs.brackets => tournament bracket creation
 cogs.dm => checks dms to send it to #stream 
 cogs.guess => start command, checks guesses 
@@ -43,6 +63,7 @@ cog_imports = [
 
 @bot.event
 async def on_ready():
+    sheet_sync.start()
     print("started")
 
 
@@ -56,7 +77,7 @@ async def help(ctx):
 
 
 
-
+'''
 @client.event
 async def on_command_error(ctx,error):
     if isinstance(error, commands.MissingRequiredArgument):
@@ -73,7 +94,72 @@ async def on_command_error(ctx,error):
         channel = client.get_channel(716538413397835799)
         await channel.send(f"----------\nholup-guessing: \n`{error}`\n\n`{ctx.guild.id}` <@602569683543130113>")
 
+'''
+'''
+service = build('sheets', 'v4', credentials=credentials)
+lastno = list(topdb.all())[-1]['counter']+1
+sheet = service.spreadsheets()
+result = sheet.values().get(spreadsheetId=SAMPLE_SPREADSHEET_ID,
+                            range="Guess10!A:M").execute()
 
+values = result.get('values', [])
+print(result)
+list1=[['Title',1,2,3,4,5,6,7,8,9,10, 'pack / category (leave empty for none)' , 'counter [ DO NOT CHANGE ]']]
+list2=[]
+
+for i in topdb.all():
+    i0 = i['top10']['0']
+    i1 = i['top10']['1']
+    list2 = [
+    i['top10']['0'],
+    i['top10']['1'],
+    i['top10']['2'],
+    i['top10']['3'],
+    i['top10']['4'],
+    i['top10']['5'],
+    i['top10']['6'],
+    i['top10']['7'],
+    i['top10']['8'],
+    i['top10']['9'],
+    i['top10']['10'],
+    i['pack'],
+    i['counter']
+    ]
+    list1.append(list2)
+    list2=[]
+
+body = {
+    'values': list1
+}
+
+result = service.spreadsheets().values().update(
+    spreadsheetId=SAMPLE_SPREADSHEET_ID, range="Guess10!A:M",
+    valueInputOption="USER_ENTERED", body=body).execute()
+'''
+
+@tasks.loop(minutes=1)
+async def sheet_sync():
+    service = build('sheets', 'v4', credentials=credentials)
+    sheet = service.spreadsheets()
+    result = sheet.values().get(spreadsheetId=SAMPLE_SPREADSHEET_ID,
+                                range="Guess10!A:M").execute()
+    values = result.get('values', [])
+    values.pop(0)
+    for i in values:
+        top10dict = {
+            '0': i[0],
+            '1': i[1],
+            '2': i[2],
+            '3': i[3],
+            '4': i[4],
+            '5': i[5],
+            '6': i[6],
+            '7': i[7],
+            '8': i[8],
+            '9': i[9],
+            '10': i[10],
+        }
+        topdb.upsert({"counter":int(i[12]),'top10':top10dict,'pack': i[11]},Query().counter==i[12])
 
 
 
@@ -83,6 +169,7 @@ for extension in cog_imports:
     bot.load_extension(extension)
     print(f"Loaded {extension}")
 bot.run(os.environ.get("token"))
+
 
 
 
