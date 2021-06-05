@@ -59,10 +59,11 @@ class Guess(commands.Cog):
                     lst=['https://tenor.com/view/cry-about-it-cry-about-it-meme-gif-20184012']
                     await msg.reply(random.choice(lst))
                     break
-        try:
-            wlist = await msg.channel.webhooks()
-        except:
-            return await msg.channel.send("The bot is missing permissions to create webhooks")
+        if msg.content.startswith(prefix_for_guesses) or msg.content.startswith(actual_prefix):
+            try:
+                wlist = await msg.channel.webhooks()
+            except:
+                return await msg.channel.send("The bot is missing permissions to create webhooks")
         if len(wlist) == 0:
             hook = await msg.channel.create_webhook(name="guess10")
         else:
@@ -89,7 +90,7 @@ class Guess(commands.Cog):
                         title=search[0]['top10']['0'],
                         description=desc,
                         color=colors['yellow']
-                    ).set_footer(text=search[0]['counter']),username="guess10",avatar_url=avatar)
+                    ).set_footer(text=str(search[0]['counter'])+" | Don't like the lists? Want more variety? DM the bot with your own!"),username="guess10",avatar_url=avatar)
             '''rng=random.choice([1,2,3])
             if rng==2:
                 rand=random.choice(topdb.all())
@@ -106,7 +107,7 @@ class Guess(commands.Cog):
             await hook.send(embed=discord.Embed(
                 title=rand['top10']['0'],
                 description='1.\n2.\n3.\n4.\n5.\n6.\n7.\n8.\n9.\n10.'
-            ).set_footer(text=rand['counter']),username="guess10",avatar_url=avatar)
+            ).set_footer(text=str(search[0]['counter'])+" | Don't like the lists? Want more variety? DM the bot with your own!"),username="guess10",avatar_url=avatar)
             currentdb.upsert({'current':True,'top10':rand['top10'],'start':time.time(),'channelid':msg.channel.id,'userid':msg.author.id,'guessed':{'1':None,'2':None,'3':None,'4':None,'5':None,'6':None,'7':None,'8':None,'9':None,'10':None},'endcount':0,"counter":rand["counter"]},Query().channelid==msg.channel.id)
             async with aiohttp.ClientSession() as session:
                 webhook = discord.Webhook.from_url('https://discord.com/api/webhooks/847130597071519754/Wv235UB6fZc3bB-2R1pl33KZNud_NJBK0f5DZI1kJ82iYtRnDC4-PzquIU_7pOyf6U8b', adapter=discord.AsyncWebhookAdapter(session))
@@ -136,7 +137,7 @@ class Guess(commands.Cog):
                 title=search[0]['top10']['0'],
                 description=desc,
                 color=colors['green']
-            ).set_footer(text=search[0]['counter']),username="guess10",avatar_url=avatar)
+            ).set_footer(text=str(search[0]['counter'])+" | Don't like the lists? Want more variety? DM the bot with your own!"),username="guess10",avatar_url=avatar)
         if msg.content.startswith(prefix_for_guesses):
             search=currentdb.search(Query().channelid==msg.channel.id)
             if len(search)==0:
@@ -159,7 +160,7 @@ class Guess(commands.Cog):
                     title=search[0]['top10']['0'],
                     description=desc,
                     color=colors['red']
-                ).set_footer(text=search[0]['counter']),username="guess10",avatar_url=avatar)
+                ).set_footer(text=str(search[0]['counter'])+" | Don't like the lists? Want more variety? DM the bot with your own!"),username="guess10",avatar_url=avatar)
 
             top10n=list(search[0]['top10'].values())
             top10n.pop(0)
@@ -245,7 +246,7 @@ class Guess(commands.Cog):
                         title=search[0]['top10']['0'],
                         description=desc,
                         color=colors['green']
-                    ).set_footer(text=search[0]['counter']),username="guess10",avatar_url=avatar)
+                    ).set_footer(text=str(search[0]['counter'])+" | Don't like the lists? Want more variety? DM the bot with your own!"),username="guess10",avatar_url=avatar)
                 gval=list(guessed.values())
                 desc=''
                 c=1
@@ -259,7 +260,7 @@ class Guess(commands.Cog):
                         title=search[0]['top10']['0'],
                         description=desc,
                         color=colors['green']
-                    ).set_footer(text=search[0]['counter']),username="guess10",avatar_url=avatar)
+                    ).set_footer(text=str(search[0]['counter'])+" | Don't like the lists? Want more variety? DM the bot with your own!"),username="guess10",avatar_url=avatar)
             else:
                 await hook.send(content=f"<@{msg.author.id}> Wrong answer!",username="guess10",avatar_url=avatar)
                 
