@@ -479,7 +479,7 @@ class Guess(commands.Cog):
                         color=colors['green']
                     ).set_footer(text=search[0]['counter']))
             else:
-                await msg.add_reaction("<a:oop:846648466859229234>")
+                pass
                 
         
         
