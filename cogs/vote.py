@@ -8,7 +8,7 @@ colors = {'red':0xFF0000,"green":0x00FF00,"yellow":0xFFFF00}
 
 
 xdb=TinyDB("database.json")
-currentdb=xdb.table("current",cache_size=30)
+currentdb=xdb.table("current",cache_size=0)
 
 
 class Vote(commands.Cog):
@@ -21,7 +21,7 @@ class Vote(commands.Cog):
     async def vote(self,ctx):
         search=currentdb.search(Query().channelid==ctx.channel.id)
         if search[0]['current']!=True:
-            return await ctx.send("No match going on.")
+            return await ctx.send("No match going on. Did you mean to do `!!start`")
         if search[0]['start']+60*5 - time.time() < 35:
             timeleft=int(search[0]['start']+60*5) - time.time()
             return await ctx.send(f"There is only {int(timeleft)}s left, wait thx")

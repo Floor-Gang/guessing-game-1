@@ -14,9 +14,12 @@ class Check(commands.Cog):
         self.bot = bot 
         self.check.start()
 
-    @tasks.loop(minutes=1)
+    @tasks.loop(minutes=2)
     async def check(self):
+        currentdb.clear_cache()
+        pointsdb.clear_cache()
         for search in currentdb.all():
+            
             if search['start']+60*5 <= time.time() and search['current'] != False:
                 currentdb.update({"current":False},Query().channelid==search['channelid'])
                 gval=list(search['guessed'].values())

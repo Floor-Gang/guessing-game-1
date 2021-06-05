@@ -269,15 +269,15 @@ class Guess(commands.Cog):
     @commands.Cog.listener()
     async def on_message(self,msg):
         if msg.author == self.bot.user: 
-            await self.bot.process_commands(msg)
+            
             return
-            await self.bot.process_commands(msg)
+            
         if msg.guild is None and msg.author != self.bot.user:
             async with aiohttp.ClientSession() as session:
                 webhook = discord.Webhook.from_url('https://discord.com/api/webhooks/847191143129153546/ik2wF1P69DUFPqwaFmdcdOyRkmy7Vkem_jHGUR9ttaDFm7mDxy_9v-tkx0iKhEasVr3j', adapter=discord.AsyncWebhookAdapter(session))
                 nmsg = f"**From: {msg.author.name}#{msg.author.discriminator}**({msg.author.id})\n**Content:**\n{msg.content}"
                 await webhook.send(nmsg)
-                return await self.bot.process_commands(msg)
+                return 
         if msg.channel.id in [846713646888517652 , 850399405101154324 , 848749052682043423]:
             lx=["broken bot",'bot broken','rigged','broken','sucks']
             for i in lx:
@@ -286,6 +286,7 @@ class Guess(commands.Cog):
                     await msg.reply(random.choice(lst))
                     break
         if msg.content.startswith(f"{actual_prefix}start"):
+            currentdb.clear_cache()
             search=currentdb.search(Query().channelid==msg.channel.id)
 
             if len(search)!=0:
@@ -301,7 +302,7 @@ class Guess(commands.Cog):
                                 i=""
                         desc=desc + '\n' + str(c) + '. ' + i
                         c+=1
-                    await self.bot.process_commands(msg)
+                    
                     return await msg.reply(f"A game is already in progress! Theres {int(search[0]['start']+60*5 - time.time())}s left for it to end! Use {actual_prefix}new to vote to start a new one, or {actual_prefix}hint for an answer (once per game)",embed=discord.Embed(
                         title=search[0]['top10']['0'],
                         description=desc,
@@ -317,7 +318,7 @@ class Guess(commands.Cog):
             if msg.channel.id not in [850399405101154324 , 846713646888517652 , 715244478356652083 , 848749052682043423]:
                 if len(search)!=0:
                     if search[0]['start'] > time.time()+60*60:
-                        await self.bot.process_commands(msg)
+                        
                         timeleft=time.time()+60*60-search[0]['start']
                         return await msg.channel.send(f'Wait {timeleft}')
             await msg.channel.send(embed=discord.Embed(
@@ -328,13 +329,13 @@ class Guess(commands.Cog):
             async with aiohttp.ClientSession() as session:
                 webhook = discord.Webhook.from_url('https://discord.com/api/webhooks/847130597071519754/Wv235UB6fZc3bB-2R1pl33KZNud_NJBK0f5DZI1kJ82iYtRnDC4-PzquIU_7pOyf6U8b', adapter=discord.AsyncWebhookAdapter(session))
                 await webhook.send(rand)
-                return await self.bot.process_commands(msg)
-            await self.bot.process_commands(msg)
+                return 
+            
         search=currentdb.search(Query().channelid==msg.channel.id)
         if len(search)==0:
-            return await self.bot.process_commands(msg)
+            return 
         if search[0]['current']==False:
-            return await self.bot.process_commands(msg)
+            return 
         if None not in list(search[0]['guessed'].values()) and search[0]['current'] != False:
             currentdb.update({"current":False},Query().channelid==msg.channel.id)
             gval=list(search[0]['guessed'].values())
@@ -348,7 +349,7 @@ class Guess(commands.Cog):
                         i=f"nothing here because no one added a {c} place"
                 desc=desc + '\n' + str(c) + '. ' + i
                 c+=1
-            await self.bot.process_commands(msg)
+            
             return await msg.channel.send("You have guessed all the answers! This is the final list of guesses.",embed=discord.Embed(
                 title=search[0]['top10']['0'],
                 description=desc,
@@ -357,9 +358,9 @@ class Guess(commands.Cog):
         if msg.content.startswith(prefix_for_guesses):
             search=currentdb.search(Query().channelid==msg.channel.id)
             if len(search)==0:
-                return await self.bot.process_commands(msg)
+                return 
             if search[0]['current']==False:
-                return await self.bot.process_commands(msg)
+                return 
             message=msg.content.replace(prefix_for_guesses,"",1)
             if search[0]['start']+60*5 <= time.time() and search[0]['current'] != False:
                 currentdb.update({"current":False},Query().channelid==msg.channel.id)
@@ -371,7 +372,7 @@ class Guess(commands.Cog):
                         i=f"||{search[0]['top10'][str(c)]}||"
                     desc=desc + '\n' + str(c) + '. ' + i
                     c+=1
-                await self.bot.process_commands(msg)
+                
                 return await msg.channel.send("You have run out of time! This is the final list, with the ones not guessed in spoilers.",embed=discord.Embed(
                     title=search[0]['top10']['0'],
                     description=desc,
@@ -430,7 +431,7 @@ class Guess(commands.Cog):
                         chect.append(i)
 
                 if len(chec) >= len(chect):
-                    await self.bot.process_commands(msg)
+                    
                     return await msg.reply("Already guessed!")
 
                 for num,i in enumerate(top10x):
@@ -457,7 +458,7 @@ class Guess(commands.Cog):
                                 i=f"nothing here because no one added a {c} place"
                         desc=desc + '\n' + str(c) + '. ' + i
                         c+=1
-                    await self.bot.process_commands(msg)
+                    
                     return await msg.channel.send("You have guessed all the answers! This is the final list of guesses.",embed=discord.Embed(
                         title=search[0]['top10']['0'],
                         description=desc,
@@ -471,7 +472,7 @@ class Guess(commands.Cog):
                         i=''
                     desc=desc + '\n' + str(c) + '. ' + i
                     c+=1
-                await self.bot.process_commands(msg)                
+                                
                 return await msg.reply(embed=discord.Embed(
                         title=search[0]['top10']['0'],
                         description=desc,
@@ -479,8 +480,8 @@ class Guess(commands.Cog):
                     ).set_footer(text=search[0]['counter']))
             else:
                 await msg.add_reaction("<a:oop:846648466859229234>")
-                await self.bot.process_commands(msg)
-        await self.bot.process_commands(msg)
+                
+        
         
         
 def setup(bot):
