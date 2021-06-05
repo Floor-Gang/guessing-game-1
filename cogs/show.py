@@ -18,6 +18,7 @@ class Show(commands.Cog):
     @commands.command(aliases=['show','hint'])
     @commands.cooldown(1, 60*2.5, commands.BucketType.channel)
     async def reveal(self,ctx):
+        currentdb.clear_cache()
         search=currentdb.search(Query().channelid==ctx.channel.id) 
         if None not in list(search[0]['guessed'].values()) and search[0]['current'] != False:
             currentdb.update({"current":False},Query().channelid==ctx.channel.id)
@@ -102,6 +103,7 @@ class Show(commands.Cog):
     @commands.command(aliases=['forceend','kill','killswitch','end'])
     @commands.has_permissions(manage_messages=True)
     async def forcenew(self,ctx):
+        currentdb.clear_cache()
         search=currentdb.search(Query().channelid==ctx.channel.id)
         if search[0]['current']!=False:
             currentdb.update({"current":False},Query().channelid==search[0]['channelid'])

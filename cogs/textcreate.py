@@ -17,7 +17,7 @@ class Create(commands.Cog):
 
 
     @commands.command() 
-    async def text(self,ctx,typex,*,message)
+    async def text(self,ctx,typex,*,message):
 
 
 

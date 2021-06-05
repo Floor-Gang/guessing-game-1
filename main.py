@@ -9,10 +9,10 @@ from cogs.helpers import actual_prefix,prefix_for_guesses
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 from tinydb import TinyDB,Query
-
+import threading
 
 xdb=TinyDB("database.json")
-topdb=xdb.table("topten",cache_size=30)
+topdb=xdb.table("topten",cache_size=0)
 
 
 actual_prefix=actual_prefix()
@@ -37,6 +37,8 @@ cogs.guess => start command, checks guesses
 cogs.helpers => helper functions, no commands 
 cogs.manipulate => eval, add , remove and anything to do with manipulating the db directly
 cogs.check => checks
+cogs.show => end and hint
+
 
 cogs.textcreate => [ in progress ] create text effects
 '''
@@ -64,7 +66,7 @@ cog_imports = [
 @bot.event
 async def on_ready():
     sheet_sync.start()
-    print("started")
+    print("Started")
 
 
 @bot.command()
@@ -77,7 +79,7 @@ async def help(ctx):
 
 
 
-'''
+
 @client.event
 async def on_command_error(ctx,error):
     if isinstance(error, commands.MissingRequiredArgument):
@@ -94,8 +96,8 @@ async def on_command_error(ctx,error):
         channel = client.get_channel(716538413397835799)
         await channel.send(f"----------\nholup-guessing: \n`{error}`\n\n`{ctx.guild.id}` <@602569683543130113>")
 
-'''
-'''
+
+
 service = build('sheets', 'v4', credentials=credentials)
 lastno = list(topdb.all())[-1]['counter']+1
 sheet = service.spreadsheets()
@@ -103,7 +105,7 @@ result = sheet.values().get(spreadsheetId=SAMPLE_SPREADSHEET_ID,
                             range="Guess10!A:M").execute()
 
 values = result.get('values', [])
-print(result)
+
 list1=[['Title',1,2,3,4,5,6,7,8,9,10, 'pack / category (leave empty for none)' , 'counter [ DO NOT CHANGE ]']]
 list2=[]
 
@@ -135,31 +137,36 @@ body = {
 result = service.spreadsheets().values().update(
     spreadsheetId=SAMPLE_SPREADSHEET_ID, range="Guess10!A:M",
     valueInputOption="USER_ENTERED", body=body).execute()
-'''
 
-@tasks.loop(minutes=1)
+class BackgroundTasks(threading.Thread):
+    def sheet_sync_down():
+        service = build('sheets', 'v4', credentials=credentials)
+        sheet = service.spreadsheets()
+        result = sheet.values().get(spreadsheetId=SAMPLE_SPREADSHEET_ID,
+                                    range="Guess10!A:M").execute()
+        values = result.get('values', [])
+        values.pop(0)
+        for i in values:
+            top10dict = {
+                '0': i[0],
+                '1': i[1],
+                '2': i[2],
+                '3': i[3],
+                '4': i[4],
+                '5': i[5],
+                '6': i[6],
+                '7': i[7],
+                '8': i[8],
+                '9': i[9],
+                '10': i[10],
+            }
+            topdb.upsert({"counter":int(i[12]),'top10':top10dict,'pack': i[11]},Query().counter==int(i[12]))
+        print(len(topdb))
+t = BackgroundTasks()
+
+@tasks.loop(minutes=5)
 async def sheet_sync():
-    service = build('sheets', 'v4', credentials=credentials)
-    sheet = service.spreadsheets()
-    result = sheet.values().get(spreadsheetId=SAMPLE_SPREADSHEET_ID,
-                                range="Guess10!A:M").execute()
-    values = result.get('values', [])
-    values.pop(0)
-    for i in values:
-        top10dict = {
-            '0': i[0],
-            '1': i[1],
-            '2': i[2],
-            '3': i[3],
-            '4': i[4],
-            '5': i[5],
-            '6': i[6],
-            '7': i[7],
-            '8': i[8],
-            '9': i[9],
-            '10': i[10],
-        }
-        topdb.upsert({"counter":int(i[12]),'top10':top10dict,'pack': i[11]},Query().counter==i[12])
+    t.start()
 
 
 

@@ -28,7 +28,7 @@ class Manipulate(commands.Cog):
             dictx[str(num+1)]=i
         print(dictx)
         print(list(topdb.all())[-1]["counter"]+1)
-        topdb.upsert({'counter':list(topdb.all())[-1]["counter"]+1,"top10":dictx},Query().top10==dictx)
+        topdb.upsert({'counter':list(topdb.all())[-1]["counter"]+1,"top10":dictx,'pack': ""},Query().top10==dictx)
         topdb.clear_cache()
         sheet_up()
         await ctx.send("Added")
