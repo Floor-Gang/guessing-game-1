@@ -33,7 +33,7 @@ class Check(commands.Cog):
                             i=f"nothing here because no one added a {c} place"
                     desc=desc + '\n' + str(c) + '. ' + i
                     c+=1
-                channel=self.bot.get_channel(search['channelid'])
+                channel=self.bot.fetch_channel(search['channelid'])
                 await channel.send("You have run out of time! This is the final list, with the ones not guessed in spoilers.",embed=discord.Embed(
                     title=search['top10']['0'],
                     description=desc,
