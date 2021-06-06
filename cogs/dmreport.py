@@ -41,12 +41,18 @@ class Dm(commands.Cog):
         if ctx.author.id!=602569683543130113 and ctx.author.id!=200621124768235521:
             return
         search=dmdb.search(Query().userid==int(id))
+        if len(search)==0:
+            dmdb.upsert({"userid":int(id),"blockedby":ctx.author.id,"reason":reason,"current":True},Query().userid==int(id))
+            await ctx.reply(f"Blocked <@{id}>")
+            return
         if search[0]['current']==True:
             dmdb.upsert({"userid":int(id),"blockedby":ctx.author.id,"reason":reason,"current":False},Query().userid==int(id))
             await ctx.reply(f"Unblocked <@{search[0]['userid']}>")
+            return
         if search[0]['current']==False:
             dmdb.upsert({"userid":int(id),"blockedby":ctx.author.id,"reason":reason,"current":True},Query().userid==int(id))
             await ctx.reply(f"Blocked <@{search[0]['userid']}>")
+            return
         pass
 
 
@@ -54,6 +60,11 @@ class Dm(commands.Cog):
     async def report(self,ctx,id,*,reason=None):
         if not reason:
             reason="Not given"
+        try:
+            id = int(id)
+        except:
+            return await ctx.send("Format: report <id> <reason>.\nID can be found in the footer of the lists.")
+            
         dmsearch = dmdb.search(Query().userid==ctx.author.id)
         if len(dmsearch) != 0 and dmsearch[0]["current"]==True:
             return await ctx.send("You are blocked from sending DMs and Reports.")
