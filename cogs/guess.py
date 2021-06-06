@@ -68,11 +68,14 @@ class Guess(commands.Cog):
             if len(wlist) == 0:
                 hook = await msg.channel.create_webhook(name="guess10")
             else:
+                boolxy=True
                 for i in wlist:
                     if i.user==self.bot.user:
                         hook = i
+                        boolxy=False
                         break
-                hook = await msg.channel.create_webhook(name="guess10")
+                if boolxy==True:
+                    hook = await msg.channel.create_webhook(name="guess10")
         if msg.content.startswith(f"{actual_prefix}start"):
             currentdb.clear_cache()
             search=currentdb.search(Query().channelid==msg.channel.id)
