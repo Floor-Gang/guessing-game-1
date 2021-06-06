@@ -3,11 +3,13 @@ import discord
 from discord.ext import tasks , commands
 from tinydb import TinyDB,Query
 import time
-
+from cogs.helpers import ua
 xdb=TinyDB("database.json")
 currentdb=xdb.table("current",cache_size=30)
 pointsdb=xdb.table("points",cache_size=30)
 colors = {'red':0xFF0000,"green":0x00FF00,"yellow":0xFFFF00}
+
+ua = ua()
 
 class Check(commands.Cog):
     def __init__(self, bot):
@@ -19,7 +21,6 @@ class Check(commands.Cog):
         currentdb.clear_cache()
         pointsdb.clear_cache()
         for search in currentdb.all():
-            
             if search['start']+60*5 <= time.time() and search['current'] != False:
                 currentdb.update({"current":False},Query().channelid==search['channelid'])
                 gval=list(search['guessed'].values())
@@ -34,11 +35,23 @@ class Check(commands.Cog):
                     desc=desc + '\n' + str(c) + '. ' + i
                     c+=1
                 channel=self.bot.fetch_channel(search['channelid'])
-                await channel.send("You have run out of time! This is the final list, with the ones not guessed in spoilers.",embed=discord.Embed(
+                try:
+                    wlist = await channel.webhooks()
+                except:
+                    return await channel.send("The bot is missing permissions to create webhooks")
+                if len(wlist) == 0:
+                    hook = await channel.create_webhook(name="guess10")
+                else:
+                    for i in wlist:
+                        if i.user==self.bot.user:
+                            hook = i
+                            break
+                    hook = await channel.create_webhook(name="guess10")
+                await hook.send(content="You have run out of time! This is the final list, with the ones not guessed in spoilers.",embed=discord.Embed(
                     title=search['top10']['0'],
                     description=desc,
                     color=colors['red']
-                ).set_footer(text=search['counter']))
+                ).set_footer(text=str(search[0]['counter'])+" | Don't like the lists? Want more variety? DM the bot with your own!"),username=ua[0],avatar_url=ua[1])
             else:
                 pass
         pass

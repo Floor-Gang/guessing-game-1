@@ -79,3 +79,9 @@ def sheet_up():
     service.spreadsheets().values().update(
         spreadsheetId=SAMPLE_SPREADSHEET_ID, range="Guess10!A:M",
         valueInputOption="USER_ENTERED", body=body).execute()
+
+
+
+def ua():
+    tup = ("guess10","https://media.discordapp.net/attachments/850764519344701470/850778722742304829/image4.jpg")
+    return tup
