@@ -3,7 +3,8 @@ import ast
 import bs4 as BeautifulSoup
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
-from tinydb import TinyDB , Query
+from tinydb import TinyDB
+import random
 
 topdb = TinyDB('database.json').table('topten',cache_size=0)
 SAMPLE_SPREADSHEET_ID = '181E99091FvrIaQDtJJWOTV3VmqPVr5sCGfXGExb6mx0'
@@ -85,3 +86,17 @@ def sheet_up():
 def ua():
     tup = ("guess10","https://media.discordapp.net/attachments/850764519344701470/850778722742304829/image4.jpg")
     return tup
+
+
+
+
+
+
+def footers():
+    listx = [
+        ' | Don\'t like the lists? Want more variety? DM the bot with your own!',
+        "Join discord.gg/holup for more fun games!",
+        "Use the report command if you see a list unfit for the bot!",
+        "Need help with the bot? DM the bot and we might get back to you!"
+    ]
+    return random.choice(listx)

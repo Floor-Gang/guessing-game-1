@@ -3,10 +3,10 @@ from discord.ext import commands
 from tinydb import TinyDB,Query
 import time
 import discord
-
+from cogs.helpers import footers,ua
 colors = {'red':0xFF0000,"green":0x00FF00,"yellow":0xFFFF00}
 
-
+ua=ua()
 xdb=TinyDB("database.json")
 currentdb=xdb.table("current",cache_size=0)
 
@@ -50,6 +50,7 @@ class Vote(commands.Cog):
                         gval=list(search[0]['guessed'].values())
                         desc=''
                         c=1
+                        footer=footers()
                         for i in gval:
                             if i == None:
                                 try:
@@ -63,7 +64,7 @@ class Vote(commands.Cog):
                             title=search[0]['top10']['0'],
                             description=desc,
                             color=colors['red'],
-                        ).set_footer(text=search[0]['counter']))
+                        ).set_footer(text=str(search[0]['counter'])+footer),username=ua[0],avatar_url=ua[1])
             pass
         pass
 

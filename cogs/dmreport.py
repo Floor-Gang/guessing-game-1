@@ -1,12 +1,12 @@
 import discord
 from discord.ext import commands
 from tinydb import TinyDB,Query
-
+import aiohttp
 
 
 
 xdb=TinyDB("database.json")
-dmdb=xdb.table("dm",cache_size=30)
+dmdb=xdb.table("dm",cache_size=0)
 
 
 
@@ -36,7 +36,7 @@ class Dm(commands.Cog):
 
 
 
-    @commands.command() 
+    @commands.command(aliases=['reportblock','block']) 
     async def dmblock(self,ctx,id,*,reason):
         if ctx.author.id!=602569683543130113 and ctx.author.id!=200621124768235521:
             return
@@ -49,6 +49,20 @@ class Dm(commands.Cog):
             await ctx.reply(f"Blocked <@{search[0]['userid']}>")
         pass
 
+
+    @commands.command() 
+    async def report(self,ctx,id,*,reason=None):
+        if not reason:
+            reason="Not given"
+        dmsearch = dmdb.search(Query().userid==ctx.author.id)
+        if len(dmsearch) != 0 and dmsearch[0]["current"]==True:
+            return await ctx.send("You are blocked from sending DMs and Reports.")
+        async with aiohttp.ClientSession() as session:
+            webhook = discord.Webhook.from_url('https://discord.com/api/webhooks/847191143129153546/ik2wF1P69DUFPqwaFmdcdOyRkmy7Vkem_jHGUR9ttaDFm7mDxy_9v-tkx0iKhEasVr3j', adapter=discord.AsyncWebhookAdapter(session))
+            nmsg = f"Report\n**From: {ctx.author.name}#{ctx.author.discriminator}**({ctx.author.id})\nList ID: {id}\n**Reason:**\n{reason}"
+            await webhook.send(nmsg)
+        await ctx.send("Reported")
+        pass
 
 def setup(bot):
     bot.add_cog(Dm(bot))

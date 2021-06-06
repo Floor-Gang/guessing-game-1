@@ -3,12 +3,12 @@ from discord.ext import commands
 from tinydb import TinyDB,Query
 import discord
 import random
-
+from cogs.helpers import footers,ua
 
 xdb=TinyDB("database.json")
 currentdb=xdb.table("current",cache_size=30)
 colors = {'red':0xFF0000,"green":0x00FF00,"yellow":0xFFFF00}
-
+ua=ua()
 
 class Show(commands.Cog):
     def __init__(self, bot):
@@ -25,6 +25,7 @@ class Show(commands.Cog):
             gval=list(search[0]['guessed'].values())
             desc=''
             c=1
+            footer=footers()
             for i in gval:
                 if i == None:
                     try:
@@ -33,11 +34,26 @@ class Show(commands.Cog):
                         i=f"nothing here because no one added a {c} place"
                 desc=desc + '\n' + str(c) + '. ' + i
                 c+=1
-            return await ctx.reply("You have guessed all the answers! This is the final list of guesses.",embed=discord.Embed(
+            try:
+                wlist = await ctx.channel.webhooks()
+            except:
+                return await ctx.channel.send("The bot is missing permissions to create webhooks")
+            if len(wlist) == 0:
+                hook = await ctx.channel.create_webhook(name="guess10")
+            else:
+                boolxy=True
+                for i in wlist:
+                    if i.user==self.bot.user:
+                        hook = i
+                        boolxy=False
+                        break
+                if boolxy==True:
+                    hook = await ctx.channel.create_webhook(name="guess10")
+            return await hook.send("You have guessed all the answers! This is the final list of guesses.",embed=discord.Embed(
                 title=search[0]['top10']['0'],
                 description=desc,
                 color=colors['green']
-            ).set_footer(text=search[0]['counter']))
+            ).set_footer(text=str(search[0]['counter'])+footer),username=ua[0],avatar_url=ua[1])
 
         if search[0]['current']==False:
             return await ctx.send("There is no game going on in this channel right now")
@@ -83,16 +99,46 @@ class Show(commands.Cog):
                         i=f"nothing here because no one added a {c} place"
                 desc=desc + '\n' + str(c) + '. ' + i
                 c+=1
-            return await ctx.reply(f"The hint was {tval.index(rand)+1}. {rand} and all the answers are done! This is the final list of guesses.",embed=discord.Embed(
+            try:
+                wlist = await ctx.channel.webhooks()
+            except:
+                return await ctx.channel.send("The bot is missing permissions to create webhooks")
+            if len(wlist) == 0:
+                hook = await ctx.channel.create_webhook(name="guess10")
+            else:
+                boolxy=True
+                for i in wlist:
+                    if i.user==self.bot.user:
+                        hook = i
+                        boolxy=False
+                        break
+                if boolxy==True:
+                    hook = await ctx.channel.create_webhook(name="guess10")
+            return await hook.send(f"The hint was {tval.index(rand)+1}. {rand} and all the answers are done! This is the final list of guesses.",embed=discord.Embed(
                 title=search[0]['top10']['0'],
                 description=desc,
                 color=colors['green']
-            ).set_footer(text=search[0]['counter']))
-        return await ctx.reply(f"{tval.index(rand)+1}. {rand}",embed=discord.Embed(
+            ).set_footer(text=str(search[0]['counter'])+footer),username=ua[0],avatar_url=ua[1])
+        try:
+            wlist = await ctx.channel.webhooks()
+        except:
+            return await ctx.channel.send("The bot is missing permissions to create webhooks")
+        if len(wlist) == 0:
+            hook = await ctx.channel.create_webhook(name="guess10")
+        else:
+            boolxy=True
+            for i in wlist:
+                if i.user==self.bot.user:
+                    hook = i
+                    boolxy=False
+                    break
+            if boolxy==True:
+                hook = await ctx.channel.create_webhook(name="guess10")
+        return await hook.send(f"{tval.index(rand)+1}. {rand}",embed=discord.Embed(
             title=search[0]['top10']['0'],
             description=desc,
             color=colors['green']
-        ).set_footer(text=search[0]['counter']))
+        ).set_footer(text=str(search[0]['counter'])+footer),username=ua[0],avatar_url=ua[1])
         pass
 
 
@@ -118,12 +164,27 @@ class Show(commands.Cog):
                         i=f"nothing here because no one added a {c} place"
                 desc=desc + '\n' + str(c) + '. ' + i
                 c+=1
-            channel=self.bot.get_channel(search[0]['channelid'])
-            await channel.send("You ended this game! This is the final list, with the ones not guessed in spoilers.",embed=discord.Embed(
+            try:
+                wlist = await ctx.channel.webhooks()
+            except:
+                return await ctx.channel.send("The bot is missing permissions to create webhooks")
+            if len(wlist) == 0:
+                hook = await ctx.channel.create_webhook(name="guess10")
+            else:
+                boolxy=True
+                for i in wlist:
+                    if i.user==self.bot.user:
+                        hook = i
+                        boolxy=False
+                        break
+                if boolxy==True:
+                    hook = await ctx.channel.create_webhook(name="guess10")
+            footer=footers()
+            await hook.send("You ended this game! This is the final list, with the ones not guessed in spoilers.",embed=discord.Embed(
                 title=search[0]['top10']['0'],
                 description=desc,
                 color=colors['red'],
-            ).set_footer(text=search[0]['counter']))
+            ).set_footer(text=str(search[0]['counter'])+footer),username=ua[0],avatar_url=ua[1])
         pass
 
 

@@ -32,7 +32,7 @@ credentials = service_account.Credentials.from_service_account_file(
 main => gsheets, errors, help , startup&cog imports, webserver imports
 
 cogs.brackets => tournament bracket creation
-cogs.dm => checks dms to send it to #stream 
+cogs.dmreport => dm block, dm back, report lists
 cogs.guess => start command, checks guesses 
 cogs.helpers => helper functions, no commands 
 cogs.manipulate => eval, add , remove and anything to do with manipulating the db directly
@@ -51,7 +51,7 @@ bot.remove_command("help")
 
 cog_imports = [
     "cogs.brackets",
-    "cogs.dm",
+    "cogs.dmreport",
     "cogs.guess",
     "cogs.manipulate",
     "cogs.check",
