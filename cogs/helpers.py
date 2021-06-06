@@ -95,8 +95,8 @@ def ua():
 def footers():
     listx = [
         ' | Don\'t like the lists? Want more variety? DM the bot with your own!',
-        "Join discord.gg/holup for more fun games!",
-        "Use the report command if you see a list unfit for the bot!",
-        "Need help with the bot? DM the bot and we might get back to you!"
+        " | Join discord.gg/holup for more fun games!",
+        " | Use the report command if you see a list unfit for the bot!",
+        " | Need help with the bot? DM the bot and we might get back to you!"
     ]
     return random.choice(listx)
