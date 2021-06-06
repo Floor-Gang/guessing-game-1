@@ -20,12 +20,12 @@ class Show(commands.Cog):
     async def reveal(self,ctx):
         currentdb.clear_cache()
         search=currentdb.search(Query().channelid==ctx.channel.id) 
+        footer=footers()
         if None not in list(search[0]['guessed'].values()) and search[0]['current'] != False:
             currentdb.update({"current":False},Query().channelid==ctx.channel.id)
             gval=list(search[0]['guessed'].values())
             desc=''
             c=1
-            footer=footers()
             for i in gval:
                 if i == None:
                     try:
