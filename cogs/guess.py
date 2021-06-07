@@ -11,7 +11,7 @@ from tinydb.operations import increment
 xdb=TinyDB("database.json")
 topdb=xdb.table("topten",cache_size=30)
 currentdb=xdb.table("current",cache_size=0)
-pointsdb=xdb.table("points",cache_size=30)
+pointsdb=xdb.table("points",cache_size=0)
 dmdb = xdb.table("dm",cache_size=0)
 
 ua=ua()

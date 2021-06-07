@@ -5,7 +5,7 @@ from tinydb import TinyDB,Query
 import time
 from cogs.helpers import ua
 xdb=TinyDB("database.json")
-currentdb=xdb.table("current",cache_size=30)
+currentdb=xdb.table("current",cache_size=0)
 pointsdb=xdb.table("points",cache_size=30)
 colors = {'red':0xFF0000,"green":0x00FF00,"yellow":0xFFFF00}
 

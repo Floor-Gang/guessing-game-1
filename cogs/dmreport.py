@@ -15,7 +15,7 @@ class Dm(commands.Cog):
     def __init__(self, bot):
         self.bot = bot 
     @commands.command()
-    async def dm(self,ctx,id,*,message):
+    async def dm(self,ctx,user:discord.Member,*,message):
         if ctx.author.id!=602569683543130113 and ctx.author.id!=200621124768235521:
             return
         search=dmdb.search(Query().userid==int(id))
@@ -23,23 +23,24 @@ class Dm(commands.Cog):
         if len(search)!=0:
             if search[0]['current'] == True:
                 return await ctx.reply(f"This user is blocked for {search[0]['reason']} by <@{search[0]['blockedby']}>",allowed_mentions=None)
-        try:
-            user=self.bot.get_user(int(id))
-        except:
-            return
+
         await user.send(message)
         await ctx.send(f"Messaged {user.name}#{user.discriminator} {message}")
 
-    @commands.command(aliases=["lb",'leaderboard','points'])
-    async def rank(self,ctx):
-        pass
 
 
 
     @commands.command(aliases=['reportblock','block']) 
-    async def dmblock(self,ctx,id,*,reason):
+    async def dmblock(self,ctx,id:discord.Member,*,reason=None):
         if ctx.author.id!=602569683543130113 and ctx.author.id!=200621124768235521:
             return
+        if not reason:
+            reason="Not given"
+        try:
+            id = id.id
+            id = int(id)
+        except:
+            return await ctx.send("Format: block <id> <reason>.\nID can be found in the footer of the lists.")
         search=dmdb.search(Query().userid==int(id))
         if len(search)==0:
             dmdb.upsert({"userid":int(id),"blockedby":ctx.author.id,"reason":reason,"current":True},Query().userid==int(id))
@@ -57,10 +58,11 @@ class Dm(commands.Cog):
 
 
     @commands.command() 
-    async def report(self,ctx,id,*,reason=None):
+    async def report(self,ctx,id: discord.Member,*,reason=None):
         if not reason:
             reason="Not given"
         try:
+            id = id.id
             id = int(id)
         except:
             return await ctx.send("Format: report <id> <reason>.\nID can be found in the footer of the lists.")

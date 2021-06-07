@@ -100,3 +100,6 @@ def footers():
         " | Need help with the bot? DM the bot and we might get back to you!"
     ]
     return random.choice(listx)
+
+
+

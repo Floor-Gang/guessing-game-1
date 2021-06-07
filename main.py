@@ -37,8 +37,8 @@ cogs.guess => start command, checks guesses
 cogs.helpers => helper functions, no commands 
 cogs.manipulate => eval, add , remove and anything to do with manipulating the db directly
 cogs.check => checks
-cogs.show => end and hint
-
+cogs.show => end and hint , rank
+cogs.vote => vote to end game
 
 cogs.textcreate => [ in progress ] create text effects
 '''
@@ -164,7 +164,7 @@ class BackgroundTasks(threading.Thread):
         print(len(topdb))
 t = BackgroundTasks()
 
-@tasks.loop(minutes=5)
+@tasks.loop(minutes=10)
 async def sheet_sync():
     t.start()
 

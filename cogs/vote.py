@@ -60,7 +60,23 @@ class Vote(commands.Cog):
                             desc=desc + '\n' + str(c) + '. ' + i
                             c+=1
                         channel=self.bot.get_channel(search[0]['channelid'])
-                        await channel.send("You have voted to end! This is the final list, with the ones not guessed in spoilers.",embed=discord.Embed(
+                        try:
+                            wlist = await channel.webhooks()
+                        except:
+                            return await channel.send("The bot is missing permissions to create webhooks")
+                        if len(wlist) == 0:
+                            hook = await channel.create_webhook(name="guess10")
+                        else:
+                            boolxy=True
+                            for i in wlist:
+                                if i.user==self.bot.user:
+                                    hook = i
+                                    boolxy=False
+                                    break
+                            if boolxy==True:
+                                hook = await channel.create_webhook(name="guess10")
+                        footer = footers()
+                        await hook.send("You have voted to end! This is the final list, with the ones not guessed in spoilers.",embed=discord.Embed(
                             title=search[0]['top10']['0'],
                             description=desc,
                             color=colors['red'],

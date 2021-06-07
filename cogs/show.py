@@ -7,6 +7,7 @@ from cogs.helpers import footers,ua
 
 xdb=TinyDB("database.json")
 currentdb=xdb.table("current",cache_size=30)
+pointsdb=xdb.table("points",cache_size=0)
 colors = {'red':0xFF0000,"green":0x00FF00,"yellow":0xFFFF00}
 ua=ua()
 
@@ -187,6 +188,86 @@ class Show(commands.Cog):
             ).set_footer(text=str(search[0]['counter'])+footer),username=ua[0],avatar_url=ua[1])
         pass
 
+
+
+    @commands.command(aliases=["lb",'leaderboard','points'])
+    async def rank(self,ctx):
+        store=[]
+        store2=[]
+        store3=[]
+        store4=[]
+        for num,i in enumerate(sorted(list(pointsdb.all()), key=lambda k: k['points'], reverse=True)):
+            if i["id"][1] == ctx.guild.id:
+                store2.append(i)
+        if len(store2)==0:
+            return await ctx.send("No one has points yet in this server!")
+        for num,i in enumerate(store2):
+            store3.append(f"{num+1}. <@!{i['id'][0]}> - {i['points']}")
+            if len(store3) == 10:
+                store4.append(store3)
+                store3=[]
+        if len(store3)!=0:
+            store4.append(store3)
+        for i in store4:
+            text=""
+            for j in i:
+                text = text + j + "\n"
+            store.append(text)
+        title = ctx.guild.name
+        async def createbook(bot, ctx, title, pages, **kwargs):
+
+            header = kwargs.get("header", "") # String
+            results = kwargs.get("results", 0) # Int
+            
+            pagenum = 1
+
+            def get_results():
+                results_min = (pagenum - 1) * 8 + 1
+                if pagenum == len(pages): results_max = results
+                else: results_max = pagenum * 8
+                return f"Showing {results_min} - {results_max} results out of {results}"
+
+            pagemax = len(pages)
+            if results:
+                header = get_results()
+                if len(pages) == 0: pagemax = 1
+
+            embed = discord.Embed(title=title, description=f"{header}\n\n{pages[pagenum - 1]}", colour=0xF42F42)
+            embed.set_footer(text=f"Page {pagenum}/{pagemax}", icon_url=ua[1])
+            msg = await ctx.send(embed=embed)
+            
+            await msg.add_reaction("⬅️")
+            await msg.add_reaction("➡")
+            
+            def check(reaction, user):
+                return user == ctx.author and str(reaction.emoji) in ["⬅️", "➡"]
+        
+            while True:
+                try:
+                    reaction, user = await self.bot.wait_for("reaction_add", timeout = 60, check=check)
+                    await msg.remove_reaction(reaction, user)
+                    
+                    if str(reaction.emoji) == "⬅️":
+                        pagenum -= 1
+                        if pagenum < 1: pagenum = len(pages)
+                            
+                    elif str(reaction.emoji) == "➡":
+                        pagenum += 1
+                        if pagenum > len(pages): pagenum = 1
+
+                    header = get_results() if results else header
+                    if str(reaction.emoji) == "⬅️" or str(reaction.emoji) == "➡":
+                        embed = discord.Embed(title=title, description=f"{header}\n\n{pages[pagenum - 1]}", colour=0xF42F42)
+                        embed.set_footer(text=f"Page {pagenum}/{len(pages)}", icon_url=ua[1])
+                        await msg.edit(embed=embed)
+                except:
+                    header = get_results() if results else header
+                    embed = discord.Embed(title="Bot Server Status", description=f"{header}\n\n{pages[pagenum - 1]}", colour=0xF42F42)
+                    embed.set_footer(text=f"Request timed out", icon_url=ua[1])
+                    await msg.edit(embed=embed)
+                    break
+        await createbook(self.bot,ctx,title,store)
+        pass
 
 
 def setup(bot):
