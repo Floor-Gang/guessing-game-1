@@ -10,7 +10,7 @@ from google.oauth2 import service_account
 from googleapiclient.discovery import build
 from tinydb import TinyDB,Query
 import threading
-
+import time
 xdb=TinyDB("database.json")
 topdb=xdb.table("topten",cache_size=0)
 
@@ -162,6 +162,8 @@ class BackgroundTasks(threading.Thread):
             }
             topdb.upsert({"counter":int(i[12]),'top10':top10dict,'pack': i[11]},Query().counter==int(i[12]))
         print(len(topdb))
+        return
+    sheet_sync_down()
 t = BackgroundTasks()
 
 @tasks.loop(minutes=10)
