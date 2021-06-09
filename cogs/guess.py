@@ -113,7 +113,7 @@ class Guess(commands.Cog):
             await hook.send(embed=discord.Embed(
                 title=rand['top10']['0'],
                 description='1.\n2.\n3.\n4.\n5.\n6.\n7.\n8.\n9.\n10.'
-            ).set_footer(text=str(search[0]['counter'])+footer),username=ua[0],avatar_url=ua[1])
+            ).set_footer(text=str(rand['counter'])+footer),username=ua[0],avatar_url=ua[1])
             currentdb.upsert({'current':True,'top10':rand['top10'],'start':time.time(),'channelid':msg.channel.id,'userid':msg.author.id,'guessed':{'1':None,'2':None,'3':None,'4':None,'5':None,'6':None,'7':None,'8':None,'9':None,'10':None},'endcount':0,"counter":rand["counter"]},Query().channelid==msg.channel.id)
             async with aiohttp.ClientSession() as session:
                 webhook = discord.Webhook.from_url('https://discord.com/api/webhooks/847130597071519754/Wv235UB6fZc3bB-2R1pl33KZNud_NJBK0f5DZI1kJ82iYtRnDC4-PzquIU_7pOyf6U8b', adapter=discord.AsyncWebhookAdapter(session))
