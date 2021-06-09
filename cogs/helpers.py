@@ -101,5 +101,9 @@ def footers():
     ]
     return random.choice(listx)
 
+def endmsg():
+    listx= [
 
+    ]
+    return random.choice(listx)
 

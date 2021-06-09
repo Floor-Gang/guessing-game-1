@@ -110,12 +110,6 @@ class Guess(commands.Cog):
                 rand=random.choice(list(topdb.all())[200:])'''
             rand=random.choice(list(topdb.all()))
             print(rand)
-            if msg.channel.id not in [850399405101154324 , 846713646888517652 , 715244478356652083 , 848749052682043423]:
-                if len(search)!=0:
-                    if search[0]['start'] > time.time()+60*60:
-                        
-                        timeleft=time.time()+60*60-search[0]['start']
-                        return await hook.send(f'Wait {timeleft}',username=ua[0],avatar_url=ua[1])
             await hook.send(embed=discord.Embed(
                 title=rand['top10']['0'],
                 description='1.\n2.\n3.\n4.\n5.\n6.\n7.\n8.\n9.\n10.'
@@ -232,7 +226,7 @@ class Guess(commands.Cog):
                 for num,i in enumerate(top10x):
                     if purify(i.lower()).find(purify(message.lower())) >= 0:
                         guessed[str(num+1)]=top10n[num]+f" (Guessed by: <@{msg.author.id}>)"
-                psearch=pointsdb.search(Query().id==(msg.author.id,msg.guild.id))
+                psearch=pointsdb.search(Query().id==[msg.author.id,msg.guild.id])
                 if len(psearch)==0:
                     pointsdb.insert({"id":(msg.author.id,msg.guild.id),"points":0})
                 else:

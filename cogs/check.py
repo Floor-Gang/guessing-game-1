@@ -47,7 +47,7 @@ class Check(commands.Cog):
                             hook = i
                             break
                     hook = await channel.create_webhook(name="guess10")
-                await hook.send(content="You have run out of time! This is the final list, with the ones not guessed in spoilers.",embed=discord.Embed(
+                await hook.send(content="<:Sooz:851833286112313375> You have run out of time! This is the final list, with the ones not guessed in spoilers. <a:soozwheel:851833138543460352>",embed=discord.Embed(
                     title=search['top10']['0'],
                     description=desc,
                     color=colors['red']
