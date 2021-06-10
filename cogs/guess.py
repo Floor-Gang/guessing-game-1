@@ -139,11 +139,11 @@ class Guess(commands.Cog):
                 desc=desc + '\n' + str(c) + '. ' + i
                 c+=1
             
-            return await hook.send(f"{endemotes()} You have guessed all the answers! This is the final list of guesses. {endemotes()}",embed=discord.Embed(
+            return await hook.send(f"{endemotes()}",embed=discord.Embed(
                 title=search[0]['top10']['0'],
                 description=desc,
                 color=colors['green']
-            ).set_footer(text=str(search[0]['counter'])+footer),username=ua[0],avatar_url=ua[1])
+            ).set_footer(text=str(search[0]['counter'])+" |  You have guessed all the answers! This is the final list of guesses."),username=ua[0],avatar_url=ua[1])
         if msg.content.startswith(prefix_for_guesses):
             search=currentdb.search(Query().channelid==msg.channel.id)
             if len(search)==0:
@@ -162,11 +162,11 @@ class Guess(commands.Cog):
                     desc=desc + '\n' + str(c) + '. ' + i
                     c+=1
                 
-                return await hook.send(f"{endemotes()} You have run out of time! This is the final list, with the ones not guessed in spoilers. {endemotes()}",embed=discord.Embed(
+                return await hook.send(f"{endemotes()}",embed=discord.Embed(
                     title=search[0]['top10']['0'],
                     description=desc,
                     color=colors['red']
-                ).set_footer(text=str(search[0]['counter'])+footer),username=ua[0],avatar_url=ua[1])
+                ).set_footer(text=str(search[0]['counter'])+" | You have run out of time! This is the final list, with the ones not guessed in spoilers."),username=ua[0],avatar_url=ua[1])
 
             top10n=list(search[0]['top10'].values())
             top10n.pop(0)
@@ -248,11 +248,11 @@ class Guess(commands.Cog):
                         desc=desc + '\n' + str(c) + '. ' + i
                         c+=1
                     
-                    return await hook.send(f"{endemotes()} You have guessed all the answers! This is the final list of guesses. {endemotes()}",embed=discord.Embed(
+                    return await hook.send(f"{endemotes()}",embed=discord.Embed(
                         title=search[0]['top10']['0'],
                         description=desc,
                         color=colors['green']
-                    ).set_footer(text=str(search[0]['counter'])+footer),username=ua[0],avatar_url=ua[1])
+                    ).set_footer(text=str(search[0]['counter'])+" | You have guessed all the answers! This is the final list of guesses."),username=ua[0],avatar_url=ua[1])
                 gval=list(guessed.values())
                 desc=''
                 c=1

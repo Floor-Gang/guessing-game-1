@@ -3,7 +3,7 @@ from discord.ext import commands
 from tinydb import TinyDB,Query
 import time
 import discord
-from cogs.helpers import footers,ua,endemotes
+from cogs.helpers import ua,endemotes
 colors = {'red':0xFF0000,"green":0x00FF00,"yellow":0xFFFF00}
 
 ua=ua()
@@ -58,7 +58,6 @@ class Vote(commands.Cog):
                         gval=list(search[0]['guessed'].values())
                         desc=''
                         c=1
-                        footer=footers()
                         for i in gval:
                             if i == None:
                                 try:
@@ -83,12 +82,11 @@ class Vote(commands.Cog):
                                     break
                             if boolxy==True:
                                 hook = await channel.create_webhook(name="guess10")
-                        footer = footers()
-                        await hook.send(f"{endemotes()} You have voted to end! This is the final list, with the ones not guessed in spoilers. {endemotes()}",embed=discord.Embed(
+                        await hook.send(f"{endemotes()}",embed=discord.Embed(
                             title=search[0]['top10']['0'],
                             description=desc,
                             color=colors['red'],
-                        ).set_footer(text=str(search[0]['counter'])+footer),username=ua[0],avatar_url=ua[1])
+                        ).set_footer(text=str(search[0]['counter'])+" | You have voted to end! This is the final list, with the ones not guessed in spoilers. "),username=ua[0],avatar_url=ua[1])
             pass
         pass
 

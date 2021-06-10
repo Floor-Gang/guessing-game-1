@@ -47,11 +47,11 @@ class Check(commands.Cog):
                             hook = i
                             break
                     hook = await channel.create_webhook(name="guess10")
-                await hook.send(content=f"{endemotes()} You have run out of time! This is the final list, with the ones not guessed in spoilers. {endemotes()}",embed=discord.Embed(
+                await hook.send(content=f"{endemotes()}",embed=discord.Embed(
                     title=search['top10']['0'],
                     description=desc,
                     color=colors['red']
-                ).set_footer(text=str(search[0]['counter'])+" | Don't like the lists? Want more variety? DM the bot with your own!"),username=ua[0],avatar_url=ua[1])
+                ).set_footer(text=str(search[0]['counter'])+" | You have run out of time! This is the final list, with the ones not guessed in spoilers."),username=ua[0],avatar_url=ua[1])
             else:
                 pass
         pass

@@ -50,11 +50,11 @@ class Show(commands.Cog):
                         break
                 if boolxy==True:
                     hook = await ctx.channel.create_webhook(name="guess10")
-            return await hook.send(f"{endemotes()} You have guessed all the answers! This is the final list of guesses. {endemotes()}",embed=discord.Embed(
+            return await hook.send(f"{endemotes()}",embed=discord.Embed(
                 title=search[0]['top10']['0'],
                 description=desc,
                 color=colors['green']
-            ).set_footer(text=str(search[0]['counter'])+footer),username=ua[0],avatar_url=ua[1])
+            ).set_footer(text=str(search[0]['counter'])+" | You have guessed all the answers! This is the final list of guesses. "),username=ua[0],avatar_url=ua[1])
 
         if search[0]['current']==False:
             return await ctx.send("There is no game going on in this channel right now")
@@ -115,7 +115,7 @@ class Show(commands.Cog):
                         break
                 if boolxy==True:
                     hook = await ctx.channel.create_webhook(name="guess10")
-            return await hook.send(f"{endemotes()} The hint was {tval.index(rand)+1}. {rand} and all the answers are done! This is the final list of guesses. {endemotes()}",embed=discord.Embed(
+            return await hook.send(f"The hint was {tval.index(rand)+1}. {rand} and all the answers are done! This is the final list of guesses. {endemotes()}",embed=discord.Embed(
                 title=search[0]['top10']['0'],
                 description=desc,
                 color=colors['green']
@@ -180,12 +180,11 @@ class Show(commands.Cog):
                         break
                 if boolxy==True:
                     hook = await ctx.channel.create_webhook(name="guess10")
-            footer=footers()
-            await hook.send(f"{endemotes()} You ended this game! This is the final list, with the ones not guessed in spoilers. {endemotes()}",embed=discord.Embed(
+            await hook.send(f"{endemotes()}",embed=discord.Embed(
                 title=search[0]['top10']['0'],
                 description=desc,
                 color=colors['red'],
-            ).set_footer(text=str(search[0]['counter'])+footer),username=ua[0],avatar_url=ua[1])
+            ).set_footer(text=str(search[0]['counter'])+" | You ended this game! This is the final list, with the ones not guessed in spoilers."),username=ua[0],avatar_url=ua[1])
         pass
 
 
