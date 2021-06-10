@@ -3,7 +3,7 @@ import discord
 from discord.ext import commands
 from tinydb import TinyDB,Query
 import aiohttp
-from cogs.helpers import purify , actual_prefix,prefix_for_guesses , ua , footers
+from cogs.helpers import purify , actual_prefix,prefix_for_guesses , ua , footers , endemotes
 import random
 import time
 from tinydb.operations import increment
@@ -55,13 +55,13 @@ class Guess(commands.Cog):
             except:
                 pass
 
-        if msg.channel.id in [846713646888517652 , 850399405101154324 , 848749052682043423]:
-            lx=["broken bot",'bot broken','rigged','broken','sucks']
-            for i in lx:
-                if purify(msg.content.lower()).find(i) >= 0:
-                    lst=['https://tenor.com/view/cry-about-it-cry-about-it-meme-gif-20184012']
-                    await msg.reply(random.choice(lst))
-                    break
+
+        lx=["broken bot",'bot broken','rigged','broken','sucks']
+        for i in lx:
+            if purify(msg.content.lower()).find(i) >= 0:
+                lst=['https://tenor.com/view/cry-about-it-cry-about-it-meme-gif-20184012']
+                await msg.reply(random.choice(lst))
+                break
         if msg.content.startswith(prefix_for_guesses) or msg.content.startswith(actual_prefix):
             try:
                 wlist = await msg.channel.webhooks()
@@ -114,7 +114,7 @@ class Guess(commands.Cog):
                 title=rand['top10']['0'],
                 description='1.\n2.\n3.\n4.\n5.\n6.\n7.\n8.\n9.\n10.'
             ).set_footer(text=str(rand['counter'])+footer),username=ua[0],avatar_url=ua[1])
-            currentdb.upsert({'current':True,'top10':rand['top10'],'start':time.time(),'channelid':msg.channel.id,'userid':msg.author.id,'guessed':{'1':None,'2':None,'3':None,'4':None,'5':None,'6':None,'7':None,'8':None,'9':None,'10':None},'endcount':0,"counter":rand["counter"]},Query().channelid==msg.channel.id)
+            currentdb.upsert({'current':True,'top10':rand['top10'],'start':time.time(),'guildid':msg.guild.id,'channelid':msg.channel.id,'userid':msg.author.id,'guessed':{'1':None,'2':None,'3':None,'4':None,'5':None,'6':None,'7':None,'8':None,'9':None,'10':None},'endcount':0,"counter":rand["counter"]},Query().channelid==msg.channel.id)
             async with aiohttp.ClientSession() as session:
                 webhook = discord.Webhook.from_url('https://discord.com/api/webhooks/847130597071519754/Wv235UB6fZc3bB-2R1pl33KZNud_NJBK0f5DZI1kJ82iYtRnDC4-PzquIU_7pOyf6U8b', adapter=discord.AsyncWebhookAdapter(session))
                 await webhook.send(rand)
@@ -139,7 +139,7 @@ class Guess(commands.Cog):
                 desc=desc + '\n' + str(c) + '. ' + i
                 c+=1
             
-            return await hook.send("You have guessed all the answers! This is the final list of guesses.",embed=discord.Embed(
+            return await hook.send(f"{endemotes()} You have guessed all the answers! This is the final list of guesses. {endemotes()}",embed=discord.Embed(
                 title=search[0]['top10']['0'],
                 description=desc,
                 color=colors['green']
@@ -162,7 +162,7 @@ class Guess(commands.Cog):
                     desc=desc + '\n' + str(c) + '. ' + i
                     c+=1
                 
-                return await hook.send("You have run out of time! This is the final list, with the ones not guessed in spoilers.",embed=discord.Embed(
+                return await hook.send(f"{endemotes()} You have run out of time! This is the final list, with the ones not guessed in spoilers. {endemotes()}",embed=discord.Embed(
                     title=search[0]['top10']['0'],
                     description=desc,
                     color=colors['red']
@@ -248,7 +248,7 @@ class Guess(commands.Cog):
                         desc=desc + '\n' + str(c) + '. ' + i
                         c+=1
                     
-                    return await hook.send("You have guessed all the answers! This is the final list of guesses.",embed=discord.Embed(
+                    return await hook.send(f"{endemotes()} You have guessed all the answers! This is the final list of guesses. {endemotes()}",embed=discord.Embed(
                         title=search[0]['top10']['0'],
                         description=desc,
                         color=colors['green']

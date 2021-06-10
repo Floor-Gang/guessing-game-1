@@ -3,13 +3,13 @@ from discord.ext import commands
 from tinydb import TinyDB,Query
 import time
 import discord
-from cogs.helpers import footers,ua
+from cogs.helpers import footers,ua,endemotes
 colors = {'red':0xFF0000,"green":0x00FF00,"yellow":0xFFFF00}
 
 ua=ua()
 xdb=TinyDB("database.json")
 currentdb=xdb.table("current",cache_size=0)
-
+configdb=xdb.table("config",cache_size=0)
 
 class Vote(commands.Cog):
     def __init__(self, bot):
@@ -45,7 +45,15 @@ class Vote(commands.Cog):
                 search=currentdb.search(Query().channelid==reaction.message.channel.id)
                 if search[0]['current']!=False:
                     currentdb.update({'endcount':search[0]['endcount']+1},Query().channelid==search[0]['channelid'])
-                    if search[0]['endcount']+1 >= 3:
+                    searchx=configdb.search(Query().guildid==search[0]['guildid'])
+                    countr=0
+                    if len(searchx)==0:
+                        countr=3
+                    elif searchx[0].get('votecount',0)==0:
+                        countr=3
+                    else:
+                        countr=int(searchx[0]['votecount'])
+                    if search[0]['endcount']+1 >= countr:
                         currentdb.update({"current":False},Query().channelid==search[0]['channelid'])
                         gval=list(search[0]['guessed'].values())
                         desc=''
@@ -76,7 +84,7 @@ class Vote(commands.Cog):
                             if boolxy==True:
                                 hook = await channel.create_webhook(name="guess10")
                         footer = footers()
-                        await hook.send("You have voted to end! This is the final list, with the ones not guessed in spoilers.",embed=discord.Embed(
+                        await hook.send(f"{endemotes()} You have voted to end! This is the final list, with the ones not guessed in spoilers. {endemotes()}",embed=discord.Embed(
                             title=search[0]['top10']['0'],
                             description=desc,
                             color=colors['red'],

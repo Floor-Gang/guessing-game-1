@@ -3,7 +3,7 @@ from discord.ext import commands
 from tinydb import TinyDB,Query
 import discord
 import random
-from cogs.helpers import footers,ua
+from cogs.helpers import footers,ua,endemotes
 
 xdb=TinyDB("database.json")
 currentdb=xdb.table("current",cache_size=30)
@@ -50,7 +50,7 @@ class Show(commands.Cog):
                         break
                 if boolxy==True:
                     hook = await ctx.channel.create_webhook(name="guess10")
-            return await hook.send("You have guessed all the answers! This is the final list of guesses.",embed=discord.Embed(
+            return await hook.send(f"{endemotes()} You have guessed all the answers! This is the final list of guesses. {endemotes()}",embed=discord.Embed(
                 title=search[0]['top10']['0'],
                 description=desc,
                 color=colors['green']
@@ -115,7 +115,7 @@ class Show(commands.Cog):
                         break
                 if boolxy==True:
                     hook = await ctx.channel.create_webhook(name="guess10")
-            return await hook.send(f"The hint was {tval.index(rand)+1}. {rand} and all the answers are done! This is the final list of guesses.",embed=discord.Embed(
+            return await hook.send(f"{endemotes()} The hint was {tval.index(rand)+1}. {rand} and all the answers are done! This is the final list of guesses. {endemotes()}",embed=discord.Embed(
                 title=search[0]['top10']['0'],
                 description=desc,
                 color=colors['green']
@@ -181,7 +181,7 @@ class Show(commands.Cog):
                 if boolxy==True:
                     hook = await ctx.channel.create_webhook(name="guess10")
             footer=footers()
-            await hook.send("You ended this game! This is the final list, with the ones not guessed in spoilers.",embed=discord.Embed(
+            await hook.send(f"{endemotes()} You ended this game! This is the final list, with the ones not guessed in spoilers. {endemotes()}",embed=discord.Embed(
                 title=search[0]['top10']['0'],
                 description=desc,
                 color=colors['red'],

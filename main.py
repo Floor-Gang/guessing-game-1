@@ -29,7 +29,7 @@ credentials = service_account.Credentials.from_service_account_file(
 
 
 '''
-main => gsheets, errors, help , startup&cog imports, webserver imports
+main => gsheets, errors, help , startup&cog imports, webserver imports , vc count
 
 cogs.brackets => tournament bracket creation
 cogs.dmreport => dm block, dm back, report lists
@@ -40,6 +40,8 @@ cogs.check => checks
 cogs.show => end and hint , rank
 cogs.vote => vote to end game
 
+
+cogs.config => [ in progress ] server specific settings
 cogs.textcreate => [ in progress ] create text effects
 '''
 
@@ -56,7 +58,8 @@ cog_imports = [
     "cogs.manipulate",
     "cogs.check",
     "cogs.show",
-    "cogs.vote"
+    "cogs.vote",
+    "cogs.config"
 ]
 
 
@@ -66,14 +69,38 @@ cog_imports = [
 @bot.event
 async def on_ready():
     sheet_sync.start()
+    vc_servercount_update.start()
     print("Started")
+
+
+
+@tasks.loop(minutes=30)
+async def vc_servercount_update():
+    channel = client.get_channel(852193539248619541)
+    await channel.edit(name=f"guess10-servers: {len(client.guilds)}")
+
 
 
 @bot.command()
 async def help(ctx):
     await ctx.send(embed=discord.Embed(
         title="get help",
-        description=f"Use `{actual_prefix}start` to start a game in any channel.\nUse `{prefix_for_guesses}guess` to guess during a game.\nUse `{actual_prefix}new` to Vote to start a new game.\nUse `{actual_prefix}hint` for one answer, can be used once per game.\nGuess the top 10 things about the topic, using {prefix_for_guesses}guess to guess"
+        description=f"""
+Use `{actual_prefix}start` to start a game in any channel.
+Use `{prefix_for_guesses}<guess>` to guess during a game.
+Use `{actual_prefix}new` to Vote to start a new game.
+Use `{actual_prefix}hint` for one answer, can be used once per game.
+Guess the top 10 things about the topic, using `{prefix_for_guesses}<guess>` to guess
+
+--- mod commands ---
+
+Use {actual_prefix}end to end the current match [manage message perms needed]
+Use {actual_prefix}config to change server specific settings.
+
+--- other ---
+
+DM the bot with your own lists, or if you have problems
+"""
     ))
     pass
 

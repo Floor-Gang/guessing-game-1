@@ -15,10 +15,10 @@ class Dm(commands.Cog):
     def __init__(self, bot):
         self.bot = bot 
     @commands.command()
-    async def dm(self,ctx,user:discord.Member,*,message):
+    async def dm(self,ctx,user:discord.User,*,message):
         if ctx.author.id!=602569683543130113 and ctx.author.id!=200621124768235521:
             return
-        search=dmdb.search(Query().userid==int(id))
+        search=dmdb.search(Query().userid==int(user.id))
 
         if len(search)!=0:
             if search[0]['current'] == True:

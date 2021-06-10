@@ -3,7 +3,7 @@ import discord
 from discord.ext import tasks , commands
 from tinydb import TinyDB,Query
 import time
-from cogs.helpers import ua
+from cogs.helpers import ua , endemotes
 xdb=TinyDB("database.json")
 currentdb=xdb.table("current",cache_size=0)
 pointsdb=xdb.table("points",cache_size=30)
@@ -47,7 +47,7 @@ class Check(commands.Cog):
                             hook = i
                             break
                     hook = await channel.create_webhook(name="guess10")
-                await hook.send(content="<:Sooz:851833286112313375> You have run out of time! This is the final list, with the ones not guessed in spoilers. <a:soozwheel:851833138543460352>",embed=discord.Embed(
+                await hook.send(content=f"{endemotes()} You have run out of time! This is the final list, with the ones not guessed in spoilers. {endemotes()}",embed=discord.Embed(
                     title=search['top10']['0'],
                     description=desc,
                     color=colors['red']
