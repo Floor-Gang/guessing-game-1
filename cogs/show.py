@@ -50,7 +50,7 @@ class Show(commands.Cog):
                         break
                 if boolxy==True:
                     hook = await ctx.channel.create_webhook(name="guess10")
-            return await hook.send(f"{endemotes()}",embed=discord.Embed(
+            return await ctx.send(f"{endemotes()}",embed=discord.Embed(
                 title=search[0]['top10']['0'],
                 description=desc,
                 color=colors['green']
@@ -115,7 +115,7 @@ class Show(commands.Cog):
                         break
                 if boolxy==True:
                     hook = await ctx.channel.create_webhook(name="guess10")
-            return await hook.send(f"The hint was {tval.index(rand)+1}. {rand} and all the answers are done! This is the final list of guesses. {endemotes()}",embed=discord.Embed(
+            return await ctx.send(f"The hint was {tval.index(rand)+1}. {rand} and all the answers are done! This is the final list of guesses. {endemotes()}",embed=discord.Embed(
                 title=search[0]['top10']['0'],
                 description=desc,
                 color=colors['green']
@@ -165,22 +165,7 @@ class Show(commands.Cog):
                         i=f"nothing here because no one added a {c} place"
                 desc=desc + '\n' + str(c) + '. ' + i
                 c+=1
-            try:
-                wlist = await ctx.channel.webhooks()
-            except:
-                return await ctx.channel.send("The bot is missing permissions to create webhooks")
-            if len(wlist) == 0:
-                hook = await ctx.channel.create_webhook(name="guess10")
-            else:
-                boolxy=True
-                for i in wlist:
-                    if i.user==self.bot.user:
-                        hook = i
-                        boolxy=False
-                        break
-                if boolxy==True:
-                    hook = await ctx.channel.create_webhook(name="guess10")
-            await hook.send(f"{endemotes()}",embed=discord.Embed(
+            await ctx.send(f"{endemotes()}",embed=discord.Embed(
                 title=search[0]['top10']['0'],
                 description=desc,
                 color=colors['red'],

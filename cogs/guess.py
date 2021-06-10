@@ -139,7 +139,7 @@ class Guess(commands.Cog):
                 desc=desc + '\n' + str(c) + '. ' + i
                 c+=1
             
-            return await hook.send(f"{endemotes()}",embed=discord.Embed(
+            return await msg.channel.send(f"{endemotes()}",embed=discord.Embed(
                 title=search[0]['top10']['0'],
                 description=desc,
                 color=colors['green']
@@ -162,7 +162,7 @@ class Guess(commands.Cog):
                     desc=desc + '\n' + str(c) + '. ' + i
                     c+=1
                 
-                return await hook.send(f"{endemotes()}",embed=discord.Embed(
+                return await msg.channel.send(f"{endemotes()}",embed=discord.Embed(
                     title=search[0]['top10']['0'],
                     description=desc,
                     color=colors['red']
@@ -248,7 +248,7 @@ class Guess(commands.Cog):
                         desc=desc + '\n' + str(c) + '. ' + i
                         c+=1
                     
-                    return await hook.send(f"{endemotes()}",embed=discord.Embed(
+                    return await msg.channel.send(f"{endemotes()}",embed=discord.Embed(
                         title=search[0]['top10']['0'],
                         description=desc,
                         color=colors['green']
