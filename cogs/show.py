@@ -54,7 +54,7 @@ class Show(commands.Cog):
                 title=search[0]['top10']['0'],
                 description=desc,
                 color=colors['green']
-            ).set_footer(text=str(search[0]['counter'])+" | You have guessed all the answers! This is the final list of guesses. "),username=ua[0],avatar_url=ua[1])
+            ).set_footer(text=str(search[0]['counter'])+" | You have guessed all the answers! This is the final list of guesses. "))
 
         if search[0]['current']==False:
             return await ctx.send("There is no game going on in this channel right now")
@@ -119,7 +119,7 @@ class Show(commands.Cog):
                 title=search[0]['top10']['0'],
                 description=desc,
                 color=colors['green']
-            ).set_footer(text=str(search[0]['counter'])+footer),username=ua[0],avatar_url=ua[1])
+            ).set_footer(text=str(search[0]['counter'])+footer))
         try:
             wlist = await ctx.channel.webhooks()
         except:
@@ -169,7 +169,7 @@ class Show(commands.Cog):
                 title=search[0]['top10']['0'],
                 description=desc,
                 color=colors['red'],
-            ).set_footer(text=str(search[0]['counter'])+" | You ended this game! This is the final list, with the ones not guessed in spoilers."),username=ua[0],avatar_url=ua[1])
+            ).set_footer(text=str(search[0]['counter'])+" | You ended this game! This is the final list, with the ones not guessed in spoilers."))
         pass
 
 

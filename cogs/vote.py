@@ -71,7 +71,7 @@ class Vote(commands.Cog):
                             title=search[0]['top10']['0'],
                             description=desc,
                             color=colors['red'],
-                        ).set_footer(text=str(search[0]['counter'])+" | You have voted to end! This is the final list, with the ones not guessed in spoilers. "),username=ua[0],avatar_url=ua[1])
+                        ).set_footer(text=str(search[0]['counter'])+" | You have voted to end! This is the final list, with the ones not guessed in spoilers. "))
             pass
         pass
 
