@@ -1,10 +1,13 @@
 import requests
 import ast
-import bs4 as BeautifulSoup
+from bs4 import BeautifulSoup
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 from tinydb import TinyDB
 import random
+import traceback
+
+
 
 topdb = TinyDB('database.json').table('topten',cache_size=0)
 SAMPLE_SPREADSHEET_ID = '181E99091FvrIaQDtJJWOTV3VmqPVr5sCGfXGExb6mx0'
@@ -37,20 +40,41 @@ async def insert_returns(body):
 
 
 def getlist(link):
-    page = requests.get(link)
-    soup = BeautifulSoup(page.content, 'html.parser')
-    listx=soup.find_all('b')
-    listz=soup.find_all('h1')
-    listy=[listz[0].get_text()]
-    for i in listx:
-        if len(listy)==11:
-            break
-        if i.get_text()==None or i.get_text()=="" or i.get_text()=='\n':
-            pass
-        else:
-            listy.append(i.get_text())
-    return listy
-
+    try:
+        domain = link.split('/')[2]
+    except:
+        return
+    if domain == "www.thetoptens.com":
+        page = requests.get(link)
+        soup = BeautifulSoup(page.content, 'html.parser')
+        listx=soup.find_all('b')
+        listz=soup.find_all('h1')
+        listy=[listz[0].get_text()]
+        for i in listx:
+            if len(listy)==11:
+                break
+            if i.get_text()==None or i.get_text()=="" or i.get_text()=='\n':
+                pass
+            else:
+                listy.append(i.get_text())
+        return listy
+    elif domain == "www.shortlist.com":
+        page = requests.get(link)
+        soup = BeautifulSoup(page.content, 'html.parser')
+        listx=soup.find_all('h3')
+        listz=soup.find_all('h2')
+        listy=[listz[0].get_text()]
+        for i in listx:
+            if len(listy)==11:
+                break
+            if i.get_text()==None or i.get_text()=="" or i.get_text()=='\n':
+                pass
+            else:
+                listy.append(i.get_text().split("\n")[0].strip(f"{len(listy)}. "))
+        return listy
+        pass
+    else:
+        return None
 def sheet_up():
     service = build('sheets', 'v4', credentials=credentials)
     list1=[['Title',1,2,3,4,5,6,7,8,9,10, 'pack / category (leave empty for none)' , 'counter [ DO NOT CHANGE ]']]
@@ -100,7 +124,7 @@ def footers():
         " | Need help with the bot? DM the bot and we might get back to you!"
     ]
     return random.choice(listx)
-
+    # return " | A nitro event is going on! Use !!event to find out more!"
 def endemotes():
     listx= [
         "<:x1:840749980800385074><:x2:840749956771479562><:x3:840749904216981526><:x4:840749868326322236>",

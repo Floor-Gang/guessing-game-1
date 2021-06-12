@@ -55,13 +55,17 @@ class Guess(commands.Cog):
             except:
                 pass
 
-
+        
         lx=["broken bot",'bot broken','rigged','broken','sucks']
         for i in lx:
             if purify(msg.content.lower()).find(i) >= 0:
-                lst=['https://tenor.com/view/cry-about-it-cry-about-it-meme-gif-20184012']
-                await msg.reply(random.choice(lst))
-                break
+                currentdb.clear_cache()
+                search=currentdb.search(Query().channelid==msg.channel.id)
+                if len(search)!=0:
+                    if search[0]['current']==True:
+                        lst=['https://tenor.com/view/cry-about-it-cry-about-it-meme-gif-20184012']
+                        await msg.reply(random.choice(lst))
+                        break
         if msg.content.startswith(prefix_for_guesses) or msg.content.startswith(actual_prefix):
             try:
                 wlist = await msg.channel.webhooks()

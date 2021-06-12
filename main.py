@@ -37,8 +37,8 @@ cogs.guess => start command, checks guesses
 cogs.helpers => helper functions, no commands 
 cogs.manipulate => eval, add , remove and anything to do with manipulating the db directly
 cogs.check => checks
-cogs.show => end and hint , rank
-cogs.vote => vote to end game
+cogs.show => end and hint , rank , events , listlb
+cogs.vote => vote to end game , checks for event points
 
 
 cogs.config => [ in progress ] server specific settings
@@ -106,7 +106,7 @@ DM the bot with your own lists, or if you have problems
 
 
 
-
+'''
 @client.event
 async def on_command_error(ctx,error):
     if isinstance(error, commands.MissingRequiredArgument):
@@ -122,7 +122,7 @@ async def on_command_error(ctx,error):
     else:
         channel = client.get_channel(716538413397835799)
         await channel.send(f"----------\nholup-guessing: \n`{error}`\n\n`{ctx.guild.id}` <@602569683543130113>")
-
+'''
 
 
 service = build('sheets', 'v4', credentials=credentials)

@@ -4,6 +4,9 @@ from tinydb import TinyDB,Query
 from cogs.helpers import getlist,insert_returns , sheet_up
 import ast
 import discord
+import traceback
+import asyncio
+
 
 
 xdb=TinyDB("database.json")
@@ -42,17 +45,33 @@ class Manipulate(commands.Cog):
             return
 
         listx=getlist(link)
+        if listx==None:
+            return await ctx.send("Not a valid link!")
         title=listx.pop(0)
         try:
             dictx={0:title}
             for i,value in enumerate(listx):
                 dictx[i+1]=value
-            topdb.insert({'counter':list(topdb.all())[-1]["counter"]+1,"top10":dictx})
+            topdb.insert({'counter':list(topdb.all())[-1]["counter"]+1,"top10":dictx,'pack':None})
             topdb.clear_cache()
             sheet_up()
             await ctx.send(f"Added {title} with {listx}")
-        except Exception as e:
-            await ctx.send(e)
+        except Exception:
+            await ctx.send(traceback.format_exc())
+
+    @commands.command()
+    async def history(self,ctx):
+        if ctx.author.id != 602569683543130113 and ctx.author.id!=200621124768235521:
+            return
+        l=[]
+        msgs = await ctx.channel.history(limit=200).flatten()
+        for i in msgs:
+            l.append(i.content)
+        for i in l:
+            await self.link(ctx,i)
+            await asyncio.sleep(1)        
+
+
 
 
 
@@ -70,6 +89,7 @@ class Manipulate(commands.Cog):
         body = parsed.body[0].body	
         await insert_returns(body)
         env = {
+            'self': self,
             'bot': ctx.bot,
             'discord': discord,
             'commands': commands,

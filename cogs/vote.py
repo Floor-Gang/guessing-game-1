@@ -11,6 +11,9 @@ xdb=TinyDB("database.json")
 currentdb=xdb.table("current",cache_size=0)
 configdb=xdb.table("config",cache_size=0)
 
+eventdb=xdb.table("event",cache_size=0)
+
+
 class Vote(commands.Cog):
     def __init__(self, bot):
         self.bot = bot 
@@ -72,6 +75,22 @@ class Vote(commands.Cog):
                             description=desc,
                             color=colors['red'],
                         ).set_footer(text=str(search[0]['counter'])+" | You have voted to end! This is the final list, with the ones not guessed in spoilers. "))
+            pass
+        elif r==853128993452851210:
+            if user.id not in [200621124768235521,602569683543130113]:
+                return
+            content = reaction.message.content
+            id=content.split("(")[1].split(")")[0]
+            try:
+                id=int(id)
+            except:
+                return
+            searchr = eventdb.search(Query().id==id)
+            if len(searchr)==0:
+                eventdb.insert({"id":id,"points":1})
+            else:
+                eventdb.update({"points":searchr[0]["points"]+1},Query().id==id)
+            await reaction.message.reply(f'Added 1 point for <@{id}>')
             pass
         pass
 

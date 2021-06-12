@@ -35,11 +35,11 @@ class Check(commands.Cog):
                     desc=desc + '\n' + str(c) + '. ' + i
                     c+=1
                 channel=self.bot.fetch_channel(search['channelid'])
-                await channel.send(content=f"{endemotes()}",embed=discord.Embed(
+                await channel.send(f"{endemotes()}",embed=discord.Embed(
                     title=search['top10']['0'],
                     description=desc,
                     color=colors['red']
-                ).set_footer(text=str(search[0]['counter'])+" | You have run out of time! This is the final list, with the ones not guessed in spoilers."))
+                ).set_footer(text=str(search['counter'])+" | You have run out of time! This is the final list, with the ones not guessed in spoilers."))
             else:
                 pass
         pass
