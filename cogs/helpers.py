@@ -3,7 +3,7 @@ import ast
 from bs4 import BeautifulSoup
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
-from tinydb import TinyDB
+from tinydb import TinyDB , Query
 import random
 import traceback
 
@@ -76,6 +76,7 @@ def getlist(link):
     else:
         return None
 def sheet_up():
+    sheet_sync_down()
     service = build('sheets', 'v4', credentials=credentials)
     list1=[['Title',1,2,3,4,5,6,7,8,9,10, 'pack / category (leave empty for none)' , 'counter [ DO NOT CHANGE ]']]
     list2=[]
@@ -106,7 +107,30 @@ def sheet_up():
         valueInputOption="USER_ENTERED", body=body).execute()
 
 
-
+def sheet_sync_down():
+    service = build('sheets', 'v4', credentials=credentials)
+    sheet = service.spreadsheets()
+    result = sheet.values().get(spreadsheetId=SAMPLE_SPREADSHEET_ID,
+                                range="Guess10!A:M").execute()
+    values = result.get('values', [])
+    values.pop(0)
+    for i in values:
+        top10dict = {
+            '0': i[0],
+            '1': i[1],
+            '2': i[2],
+            '3': i[3],
+            '4': i[4],
+            '5': i[5],
+            '6': i[6],
+            '7': i[7],
+            '8': i[8],
+            '9': i[9],
+            '10': i[10],
+        }
+        topdb.upsert({"counter":int(i[12]),'top10':top10dict,'pack': i[11]},Query().counter==int(i[12]))
+    print(len(topdb))
+    return
 def ua():
     tup = ("guess10","https://media.discordapp.net/attachments/850764519344701470/850778722742304829/image4.jpg")
     return tup
@@ -123,8 +147,8 @@ def footers():
         " | Use the report command if you see a list unfit for the bot!",
         " | Need help with the bot? DM the bot and we might get back to you!"
     ]
-    return random.choice(listx)
-    # return " | A nitro event is going on! Use !!event to find out more!"
+    # return random.choice(listx)
+    return " | A nitro event is going on! Use !!event to find out more!"
 def endemotes():
     listx= [
         "<:x1:840749980800385074><:x2:840749956771479562><:x3:840749904216981526><:x4:840749868326322236>",
@@ -139,5 +163,5 @@ def endemotes():
         "<:h1:852279658438721546><:h2:852278997596241991><:h3:852278997614460949><:h4:852278997940568064>",
         ""
     ]
-    return random.choice(listx)
-
+    # return random.choice(listx)
+    return "Did you know? A nitro event is going on right now! Use !!event to find out more!"

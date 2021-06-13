@@ -5,18 +5,23 @@ import os
 # from bs4 import BeautifulSoup
 # from selenium import webdriver
 # from selenium.webdriver.chrome.options import Options
-from cogs.helpers import actual_prefix,prefix_for_guesses
+from cogs.helpers import actual_prefix,prefix_for_guesses,ua,endemotes
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 from tinydb import TinyDB,Query
 import threading
 import time
+import discord
 xdb=TinyDB("database.json")
 topdb=xdb.table("topten",cache_size=0)
 
+currentdb=xdb.table("current",cache_size=0)
+pointsdb=xdb.table("points",cache_size=30)
 
 actual_prefix=actual_prefix()
 prefix_for_guesses=prefix_for_guesses()
+ua=ua()
+colors = {'red':0xFF0000,"green":0x00FF00,"yellow":0xFFFF00}
 
 
 SAMPLE_SPREADSHEET_ID = '181E99091FvrIaQDtJJWOTV3VmqPVr5sCGfXGExb6mx0'
@@ -36,7 +41,6 @@ cogs.dmreport => dm block, dm back, report lists
 cogs.guess => start command, checks guesses 
 cogs.helpers => helper functions, no commands 
 cogs.manipulate => eval, add , remove and anything to do with manipulating the db directly
-cogs.check => checks
 cogs.show => end and hint , rank , events , listlb
 cogs.vote => vote to end game , checks for event points
 
@@ -56,7 +60,6 @@ cog_imports = [
     "cogs.dmreport",
     "cogs.guess",
     "cogs.manipulate",
-    "cogs.check",
     "cogs.show",
     "cogs.vote",
     "cogs.config"
@@ -70,6 +73,7 @@ cog_imports = [
 async def on_ready():
     sheet_sync.start()
     vc_servercount_update.start()
+    check.start()
     print("Started")
 
 
@@ -100,13 +104,17 @@ Use {actual_prefix}config to change server specific settings.
 --- other ---
 
 DM the bot with your own lists, or if you have problems
+
+--- event --- 
+
+Use {actual_prefix}events to find latest info on the events
 """
     ))
     pass
 
 
 
-'''
+
 @client.event
 async def on_command_error(ctx,error):
     if isinstance(error, commands.MissingRequiredArgument):
@@ -122,7 +130,6 @@ async def on_command_error(ctx,error):
     else:
         channel = client.get_channel(716538413397835799)
         await channel.send(f"----------\nholup-guessing: \n`{error}`\n\n`{ctx.guild.id}` <@602569683543130113>")
-'''
 
 
 service = build('sheets', 'v4', credentials=credentials)
@@ -137,26 +144,29 @@ list1=[['Title',1,2,3,4,5,6,7,8,9,10, 'pack / category (leave empty for none)' ,
 list2=[]
 
 for i in topdb.all():
-    i0 = i['top10']['0']
-    i1 = i['top10']['1']
-    list2 = [
-    i['top10']['0'],
-    i['top10']['1'],
-    i['top10']['2'],
-    i['top10']['3'],
-    i['top10']['4'],
-    i['top10']['5'],
-    i['top10']['6'],
-    i['top10']['7'],
-    i['top10']['8'],
-    i['top10']['9'],
-    i['top10']['10'],
-    i['pack'],
-    i['counter']
-    ]
-    list1.append(list2)
-    list2=[]
-
+    try:
+        i0 = i['top10']['0']
+        i1 = i['top10']['1']
+        list2 = [
+        i['top10']['0'],
+        i['top10']['1'],
+        i['top10']['2'],
+        i['top10']['3'],
+        i['top10']['4'],
+        i['top10']['5'],
+        i['top10']['6'],
+        i['top10']['7'],
+        i['top10']['8'],
+        i['top10']['9'],
+        i['top10']['10'],
+        i['pack'],
+        i['counter']
+        ]
+        list1.append(list2)
+        list2=[]
+    except Exception as e:
+        print(e)
+        print(i)
 body = {
     'values': list1
 }
@@ -196,6 +206,53 @@ t = BackgroundTasks()
 @tasks.loop(minutes=10)
 async def sheet_sync():
     t.start()
+
+
+
+
+
+
+
+
+
+
+@tasks.loop(minutes=2)
+async def check():
+    currentdb.clear_cache()
+    pointsdb.clear_cache()
+    for search in currentdb.all():
+        if search['start']+60*5 <= time.time() and search['current'] != False:
+            currentdb.update({"current":False},Query().channelid==search['channelid'])
+            gval=list(search['guessed'].values())
+            desc=''
+            c=1
+            for i in gval:
+                if i == None:
+                    try:
+                        i=f"||{search['top10'][str(c)]}||"
+                    except:
+                        i=f"nothing here because no one added a {c} place"
+                desc=desc + '\n' + str(c) + '. ' + i
+                c+=1
+            channel=bot.fetch_channel(search['channelid'])
+            await channel.send(f"{endemotes()}",embed=discord.Embed(
+                title=search['top10']['0'],
+                description=desc,
+                color=colors['red']
+            ).set_footer(text=str(search['counter'])+" | You have run out of time! This is the final list, with the ones not guessed in spoilers."))
+        else:
+            pass
+    pass
+    for point in pointsdb.all():
+        if point["points"] > 10000 and point['id'][1]==644750155030986752:
+            guild=bot.get_guild(644750155030986752)
+            role = discord.utils.get(guild.roles, id=847824735739445278)
+            try:
+                guild.get_member(point["userid"]).add_role(role)
+            except:
+                pass
+            pass
+
 
 
 

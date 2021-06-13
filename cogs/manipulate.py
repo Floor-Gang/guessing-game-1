@@ -108,11 +108,15 @@ class Manipulate(commands.Cog):
     async def remove(self,ctx,counter):
         if ctx.author.id!=602569683543130113 and ctx.author.id!=200621124768235521:
             return
+        topdb.clear_cache()
         topdb.remove(Query().counter==counter)
         topdb.clear_cache()
         sheet_up()
         await ctx.send(f"Removed No. {counter}")
 
-
+    @commands.command()
+    async def sync(self,ctx):
+        sheet_up()
+        await ctx.send("Done")
 def setup(bot):
     bot.add_cog(Manipulate(bot))
