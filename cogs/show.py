@@ -8,6 +8,7 @@ from cogs.helpers import footers,ua,endemotes
 xdb=TinyDB("database.json")
 currentdb=xdb.table("current",cache_size=30)
 pointsdb=xdb.table("points",cache_size=0)
+topdb=xdb.table("topten",cache_size=0)
 
 
 eventdb=xdb.table("event",cache_size=0)
@@ -176,7 +177,71 @@ class Show(commands.Cog):
             ).set_footer(text=str(search[0]['counter'])+" | You ended this game! This is the final list, with the ones not guessed in spoilers."))
         pass
 
+    @commands.command(aliases=["packs",'packlist'])
+    async def pack(self,ctx):
+        search=topdb.search(Query().pack!="")
+        if len(search)==0:
+            return await ctx.send("Well, it looks like we have'nt categorized out lists *yet*.\n\nMight get to it soon though.")
+        else:
+            newlist=[]
+            for i in search:
+                newlist.append(i["pack"])
+            title="Packs: "
 
+            async def createbook(bot, ctx, title, pages, **kwargs):
+
+                header = kwargs.get("header", "") # String
+                results = kwargs.get("results", 0) # Int
+                
+                pagenum = 1
+
+                def get_results():
+                    results_min = (pagenum - 1) * 8 + 1
+                    if pagenum == len(pages): results_max = results
+                    else: results_max = pagenum * 8
+                    return f"Showing {results_min} - {results_max} results out of {results}"
+
+                pagemax = len(pages)
+                if results:
+                    header = get_results()
+                    if len(pages) == 0: pagemax = 1
+
+                embed = discord.Embed(title=title, description=f"{header}\n\n{pages[pagenum - 1]}", colour=0xF42F42)
+                embed.set_footer(text=f"Page {pagenum}/{pagemax}", icon_url=ua[1])
+                msg = await ctx.send(embed=embed)
+                
+                await msg.add_reaction("⬅️")
+                await msg.add_reaction("➡")
+                
+                def check(reaction, user):
+                    return user == ctx.author and str(reaction.emoji) in ["⬅️", "➡"]
+
+                while True:
+                    try:
+                        reaction, user = await bot.wait_for("reaction_add", timeout = 60, check=check)
+                        await msg.remove_reaction(reaction, user)
+                        
+                        if str(reaction.emoji) == "⬅️":
+                            pagenum -= 1
+                            if pagenum < 1: pagenum = len(pages)
+                                
+                        elif str(reaction.emoji) == "➡":
+                            pagenum += 1
+                            if pagenum > len(pages): pagenum = 1
+
+                        header = get_results() if results else header
+                        if str(reaction.emoji) == "⬅️" or str(reaction.emoji) == "➡":
+                            embed = discord.Embed(title=title, description=f"{header}\n\n{pages[pagenum - 1]}", colour=0xF42F42)
+                            embed.set_footer(text=f"Page {pagenum}/{len(pages)}", icon_url=ua[1])
+                            await msg.edit(embed=embed)
+                    except:
+                        header = get_results() if results else header
+                        embed = discord.Embed(title=title, description=f"{header}\n\n{pages[pagenum - 1]}", colour=0xF42F42)
+                        embed.set_footer(text=f"Request timed out", icon_url=ua[1])
+                        await msg.edit(embed=embed)
+                        break
+            await createbook(self.bot,ctx,title,newlist)
+        pass
 
     @commands.command(aliases=["lb",'leaderboard','points'])
     async def rank(self,ctx):
@@ -202,6 +267,7 @@ class Show(commands.Cog):
                 text = text + j + "\n"
             store.append(text)
         title = ctx.guild.name
+
         async def createbook(bot, ctx, title, pages, **kwargs):
 
             header = kwargs.get("header", "") # String
@@ -229,10 +295,10 @@ class Show(commands.Cog):
             
             def check(reaction, user):
                 return user == ctx.author and str(reaction.emoji) in ["⬅️", "➡"]
-        
+
             while True:
                 try:
-                    reaction, user = await self.bot.wait_for("reaction_add", timeout = 60, check=check)
+                    reaction, user = await bot.wait_for("reaction_add", timeout = 60, check=check)
                     await msg.remove_reaction(reaction, user)
                     
                     if str(reaction.emoji) == "⬅️":
@@ -290,7 +356,7 @@ class Show(commands.Cog):
         if len(store2)==0:
             return await ctx.send("No one has points yet!")
         for num,i in enumerate(store2):
-            store3.append(f"{num+1}. <@!{i['id']}> - {i['points']}")
+            store3.append(f"{num+1}. <@!{i['id']}>")
             if len(store3) == 10:
                 store4.append(store3)
                 store3=[]
@@ -302,6 +368,7 @@ class Show(commands.Cog):
                 text = text + j + "\n"
             store.append(text)
         title="Event leaderboard:"
+
         async def createbook(bot, ctx, title, pages, **kwargs):
 
             header = kwargs.get("header", "") # String
@@ -329,10 +396,10 @@ class Show(commands.Cog):
             
             def check(reaction, user):
                 return user == ctx.author and str(reaction.emoji) in ["⬅️", "➡"]
-        
+
             while True:
                 try:
-                    reaction, user = await self.bot.wait_for("reaction_add", timeout = 60, check=check)
+                    reaction, user = await bot.wait_for("reaction_add", timeout = 60, check=check)
                     await msg.remove_reaction(reaction, user)
                     
                     if str(reaction.emoji) == "⬅️":
@@ -354,6 +421,7 @@ class Show(commands.Cog):
                     embed.set_footer(text=f"Request timed out", icon_url=ua[1])
                     await msg.edit(embed=embed)
                     break
+
         await createbook(self.bot,ctx,title,store)
         pass
 

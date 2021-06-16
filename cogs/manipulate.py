@@ -1,7 +1,7 @@
 # [ main cog for eval,add,link,remove ]
 from discord.ext import commands
 from tinydb import TinyDB,Query
-from cogs.helpers import getlist,insert_returns , sheet_up
+from cogs.helpers import getlist,insert_returns , sheet_sync_down, sheet_up
 import ast
 import discord
 import traceback
@@ -45,8 +45,11 @@ class Manipulate(commands.Cog):
             return
 
         listx=getlist(link)
+        
         if listx==None:
             return await ctx.send("Not a valid link!")
+        if len(listx)!=11:
+            return await ctx.send("less than 10")
         title=listx.pop(0)
         try:
             dictx={0:title}
@@ -66,6 +69,8 @@ class Manipulate(commands.Cog):
         l=[]
         msgs = await ctx.channel.history(limit=200).flatten()
         for i in msgs:
+            if i.content=="--end here--":
+                break
             l.append(i.content)
         for i in l:
             await self.link(ctx,i)
@@ -116,7 +121,7 @@ class Manipulate(commands.Cog):
 
     @commands.command()
     async def sync(self,ctx):
-        sheet_up()
+        sheet_sync_down()
         await ctx.send("Done")
 def setup(bot):
     bot.add_cog(Manipulate(bot))

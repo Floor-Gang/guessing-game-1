@@ -4,12 +4,10 @@ from bs4 import BeautifulSoup
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 from tinydb import TinyDB , Query
-import random
-import traceback
+import discord
 
-
-
-topdb = TinyDB('database.json').table('topten',cache_size=0)
+xdb = TinyDB('database.json')
+topdb=xdb.table('topten',cache_size=0)
 SAMPLE_SPREADSHEET_ID = '181E99091FvrIaQDtJJWOTV3VmqPVr5sCGfXGExb6mx0'
 SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
 SERVICE_ACCOUNT_FILE = 'guess10keys.json'
@@ -73,10 +71,24 @@ def getlist(link):
                 listy.append(i.get_text().split("\n")[0].strip(f"{len(listy)}. "))
         return listy
         pass
+    elif domain == "www.ranker.com":
+        page = requests.get(link)
+        soup = BeautifulSoup(page.content, 'html.parser')
+        listx=soup.find_all('h1')
+        listz=soup.find_all('h2')
+        listy=[listx[0].get_text()]
+        for i in listz:
+            if len(listy)==10:
+                break
+            if i.get_text()==None or i.get_text()=="" or i.get_text()=='\n':
+                pass
+            else:
+                listy.append(i.get_text().split("\n")[0].strip(f"{len(listy)}. "))
+
+        return listy
     else:
         return None
 def sheet_up():
-    sheet_sync_down()
     service = build('sheets', 'v4', credentials=credentials)
     list1=[['Title',1,2,3,4,5,6,7,8,9,10, 'pack / category (leave empty for none)' , 'counter [ DO NOT CHANGE ]']]
     list2=[]
@@ -114,7 +126,9 @@ def sheet_sync_down():
                                 range="Guess10!A:M").execute()
     values = result.get('values', [])
     values.pop(0)
-    for i in values:
+    xdb.drop_table("topten")
+    topdb=xdb.table('topten',cache_size=0)
+    for num,i in enumerate(values):
         top10dict = {
             '0': i[0],
             '1': i[1],
@@ -128,8 +142,14 @@ def sheet_sync_down():
             '9': i[9],
             '10': i[10],
         }
-        topdb.upsert({"counter":int(i[12]),'top10':top10dict,'pack': i[11]},Query().counter==int(i[12]))
+        try:
+            pac=i[11]
+        except:
+            pac=None
+        topdb.insert({"counter":num,'top10':top10dict,'pack': pac})
     print(len(topdb))
+    for num,i in enumerate(topdb.all()):
+        topdb.update({"counter":num+1},Query().top10==i["top10"])
     return
 def ua():
     tup = ("guess10","https://media.discordapp.net/attachments/850764519344701470/850778722742304829/image4.jpg")
@@ -165,3 +185,4 @@ def endemotes():
     ]
     # return random.choice(listx)
     return "Did you know? A nitro event is going on right now! Use !!event to find out more!"
+

@@ -5,7 +5,7 @@ import os
 # from bs4 import BeautifulSoup
 # from selenium import webdriver
 # from selenium.webdriver.chrome.options import Options
-from cogs.helpers import actual_prefix,prefix_for_guesses,ua,endemotes
+from cogs.helpers import actual_prefix,prefix_for_guesses,ua,endemotes, sheet_up
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 from tinydb import TinyDB,Query
@@ -67,8 +67,7 @@ cog_imports = [
 
 
 
-
-
+sheet_up()
 @bot.event
 async def on_ready():
     sheet_sync.start()
@@ -175,6 +174,8 @@ result = service.spreadsheets().values().update(
     spreadsheetId=SAMPLE_SPREADSHEET_ID, range="Guess10!A:M",
     valueInputOption="USER_ENTERED", body=body).execute()
 
+
+startbool = False
 class BackgroundTasks(threading.Thread):
     def sheet_sync_down():
         service = build('sheets', 'v4', credentials=credentials)
@@ -197,7 +198,7 @@ class BackgroundTasks(threading.Thread):
                 '9': i[9],
                 '10': i[10],
             }
-            topdb.upsert({"counter":int(i[12]),'top10':top10dict,'pack': i[11]},Query().counter==int(i[12]))
+            topdb.upsert({"counter":int(i[12]),'top10':top10dict,'pack': str(i[11]).lower()},Query().counter==int(i[12]))
         print(len(topdb))
         return
     sheet_sync_down()
@@ -205,7 +206,11 @@ t = BackgroundTasks()
 
 @tasks.loop(minutes=10)
 async def sheet_sync():
-    t.start()
+    global startbool
+    if startbool==False:
+        startbool=True
+        t.start()
+        startbool=False
 
 
 
@@ -234,7 +239,7 @@ async def check():
                         i=f"nothing here because no one added a {c} place"
                 desc=desc + '\n' + str(c) + '. ' + i
                 c+=1
-            channel=bot.fetch_channel(search['channelid'])
+            channel=bot.get_channel(search['channelid'])
             await channel.send(f"{endemotes()}",embed=discord.Embed(
                 title=search['top10']['0'],
                 description=desc,

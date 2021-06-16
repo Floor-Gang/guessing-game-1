@@ -87,7 +87,11 @@ class Guess(commands.Cog):
         if msg.content.startswith(f"{actual_prefix}start"):
             currentdb.clear_cache()
             search=currentdb.search(Query().channelid==msg.channel.id)
-
+            listpack=msg.content.split(" ")
+            if len(listpack) > 1:
+                pack = listpack[1]
+            else:
+                pack = ""
             if len(search)!=0:
                 if search[0]['current']==True:
                     gval=list(search[0]['guessed'].values())
@@ -107,13 +111,13 @@ class Guess(commands.Cog):
                         description=desc,
                         color=colors['yellow']
                     ).set_footer(text=str(search[0]['counter'])+footer),username=ua[0],avatar_url=ua[1])
-            '''rng=random.choice([1,2,3])
-            if rng==2:
-                rand=random.choice(topdb.all())
+            list_of_packs = topdb.search(Query().pack==pack.lower())
+            if list_of_packs==None or len(list_of_packs)==0:
+                return await hook.send(f"Invalid pack chosen! To choose a game without a pack, use `{actual_prefix}start`",username=ua[0],avatar_url=ua[1])
+            if pack == None:
+                rand=random.choice(list(topdb.all()))
             else:
-                rand=random.choice(list(topdb.all())[200:])'''
-            rand=random.choice(list(topdb.all()))
-            print(rand)
+                rand=random.choice(list_of_packs)
             await hook.send(embed=discord.Embed(
                 title=rand['top10']['0'],
                 description='1.\n2.\n3.\n4.\n5.\n6.\n7.\n8.\n9.\n10.'
