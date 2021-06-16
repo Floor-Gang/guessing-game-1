@@ -113,9 +113,9 @@ class Guess(commands.Cog):
                     ).set_footer(text=str(search[0]['counter'])+footer),username=ua[0],avatar_url=ua[1])
             list_of_packs = topdb.search(Query().pack==pack.lower())
             if list_of_packs==None or len(list_of_packs)==0:
-                return await hook.send(f"Invalid pack chosen! To choose a game without a pack, use `{actual_prefix}start`",username=ua[0],avatar_url=ua[1])
+                return await hook.send(f"Invalid pack chosen! To choose a game without a pack, use `{actual_prefix}start`, or use `{actual_prefix}packs` to see the packs.",username=ua[0],avatar_url=ua[1])
             if pack == None:
-                rand=random.choice(list(topdb.all()))
+                rand=random.choice(topdb.search(Query().pack==""))
             else:
                 rand=random.choice(list_of_packs)
             await hook.send(embed=discord.Embed(
